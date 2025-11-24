@@ -1,0 +1,53 @@
+#pragma once
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <cmrx/ipc/rpc.h>
+#include <cmrx/rpc/interface.h>
+
+void fbdev_init();
+
+enum FBQuadrant {
+    FBDEV_QUADRANT_NE = 1,
+    FBDEV_QUADRANT_SE = 2,
+    FBDEV_QUADRANT_NW = 4,
+    FBDEV_QUADRANT_SW = 8,
+    FBDEV_HALF_EAST = FBDEV_QUADRANT_NE + FBDEV_QUADRANT_SE,
+    FBDEV_HALF_WEST = FBDEV_QUADRANT_NW + FBDEV_QUADRANT_SW,
+    FBDEV_HALF_SOUTH = FBDEV_QUADRANT_SW + FBDEV_QUADRANT_SE,
+    FBDEV_HALF_NORTH = FBDEV_QUADRANT_NW + FBDEV_QUADRANT_NE,
+    FBDEV_WHOLE = FBDEV_HALF_SOUTH + FBDEV_HALF_NORTH
+};
+
+struct FBPosition {
+    unsigned col, row;
+};
+
+struct FBRectangle {
+    unsigned col, row, width, height;
+};
+
+typedef struct {
+    unsigned int cursor;
+    unsigned int width;
+    unsigned int y_minimum;
+    unsigned int y_maximum;
+} FBTextMetrics;
+
+struct FBDevVTable {
+    void (*blit)(INSTANCE(this), const struct FBRectangle * destination, const struct FBRectangle * texture, uint32_t * buffer, const struct FBRectangle * cull);
+    void (*line)(INSTANCE(this), const struct FBPosition * from, const struct FBPosition * to, uint32_t color);
+    void (*arc)(INSTANCE(this), const struct FBPosition * center, unsigned radius, uint8_t quadrant, uint32_t color);
+    void (*arc_fill)(INSTANCE(this), const struct FBPosition * center, unsigned radius, uint8_t quadrant, uint32_t color);
+    void (*text)(INSTANCE(this), const char * text, unsigned x, unsigned y, uint32_t rgb);
+    void (*text_measure)(INSTANCE(this), const char * text, FBTextMetrics * metrics);
+};
+
+struct FBDevImpl;
+
+struct FBDev {
+    const struct FBDevVTable * vtable;
+    struct FBDevImpl * impl;
+};
+
+extern struct FBDev fbdev;
