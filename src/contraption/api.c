@@ -6,7 +6,7 @@
 
 IMPLEMENTATION_OF(struct Contraption, struct ContraptionVTable);
 
-static int contraption_open_window(INSTANCE(this), const struct CWindow * window)
+int contraption_open_window(INSTANCE(this), const struct CWindow * window)
 {
     return contraption_load_window(window, true, false);
 }

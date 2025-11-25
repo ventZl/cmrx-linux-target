@@ -10,6 +10,7 @@
 #include "server.h"
 #include "gadget.h"
 #include "resources.h"
+#include "api_priv.h"
 
 #include <assert.h>
 
@@ -241,21 +242,37 @@ void contraption_render_text(const struct CExtent * extents, const char * text, 
 void contraption_render_window(struct CWindowInternal * window)
 {
     struct FBRectangle dest = { window->properties.left, window->properties.top, window->properties.width, window->properties.height };
-    struct FBPosition up_left = { window->properties.left, window->properties.top };
-    struct FBPosition up_right = { window->properties.left + window->properties.width - 1, window->properties.top };
-    struct FBPosition bottom_left = { window->properties.left, window->properties.top + window->properties.height - 1 };
-    struct FBPosition bottom_right = { window->properties.left + window->properties.width - 1, window->properties.top + window->properties.height - 1 };
 
-    validate_coordinate(up_left.col, up_left.row);
-    validate_coordinate(up_right.col, up_right.row);
-    validate_coordinate(bottom_left.col, bottom_left.row);
-    validate_coordinate(bottom_right.col, bottom_right.row);
+    struct FBRectangle * rect = &window_background;
+    uint32_t * text = window_pixmap;
 
-    rpc_call(&fbdev, blit, &dest, &window_background, window_pixmap, NULL);
-    rpc_call(&fbdev, line, &up_left, &up_right, 0xE3E3E3FF);
-    rpc_call(&fbdev, line, &up_left, &bottom_left, 0x9FABBCFF);
-    rpc_call(&fbdev, line, &bottom_left, &bottom_right, 0x9FABBCFF);
-    rpc_call(&fbdev, line, &up_right, &bottom_right, 0x9FABBCFF);
+    switch (window->properties.background) {
+        case BACKGROUND_DESKTOP:
+            rect = &background;
+            text = background_pixmap;
+
+        default:
+            // Do nothing
+    }
+    rpc_call(&fbdev, blit, &dest, rect, text, NULL);
+
+    if (window->properties.flags & WINDOW_FLAG_BORDER)
+    {
+        struct FBPosition up_left = { window->properties.left, window->properties.top };
+        struct FBPosition up_right = { window->properties.left + window->properties.width - 1, window->properties.top };
+        struct FBPosition bottom_left = { window->properties.left, window->properties.top + window->properties.height - 1 };
+        struct FBPosition bottom_right = { window->properties.left + window->properties.width - 1, window->properties.top + window->properties.height - 1 };
+
+        validate_coordinate(up_left.col, up_left.row);
+        validate_coordinate(up_right.col, up_right.row);
+        validate_coordinate(bottom_left.col, bottom_left.row);
+        validate_coordinate(bottom_right.col, bottom_right.row);
+
+        rpc_call(&fbdev, line, &up_left, &up_right, 0xE3E3E3FF);
+        rpc_call(&fbdev, line, &up_left, &bottom_left, 0x9FABBCFF);
+        rpc_call(&fbdev, line, &bottom_left, &bottom_right, 0x9FABBCFF);
+        rpc_call(&fbdev, line, &up_right, &bottom_right, 0x9FABBCFF);
+    }
 
     struct CGadgetInternal * gadgets = (struct CGadgetInternal *) window->properties.gadgets;
     for (int q = 0; q < window->properties.gadget_count; ++q)
@@ -266,10 +283,10 @@ void contraption_render_window(struct CWindowInternal * window)
 
 void contraption_render()
 {
-    struct FBRectangle dest = { 0, 0, 1280, 800 };
+/*    struct FBRectangle dest = { 0, 0, 1280, 800 };
     rpc_call(&fbdev, blit, &dest, &background, background_pixmap, NULL);
     dest.height = 20;
-    rpc_call(&fbdev, blit, &dest, &window_background, window_pixmap, NULL);
+    rpc_call(&fbdev, blit, &dest, &window_background, window_pixmap, NULL);*/
 
     for (unsigned q = window_stack_count; q > 0; --q)
     {
@@ -487,6 +504,28 @@ int contraption_main(void * data)
         background_pixmap[q] = 0x4168A9FF;
         window_pixmap[q] = (q % 64) < 32 ? 0xEAEAEAFF : 0xF0F0F0FF;
     }
+
+    struct CGadget desktop_gadgets[] = {
+        {
+            .type = GADGET_PANEL,
+            .top = 0,
+            .left = 0,
+            .width = 1280,
+            .height = 20,
+        }
+    };
+
+    struct CWindow desktop_window = {
+        .top = 0,
+        .left = 0,
+        .width = 1280,
+        .height = 800,
+        .gadgets = desktop_gadgets,
+        .gadget_count = 1,
+        .background = BACKGROUND_DESKTOP
+    };
+
+    contraption_open_window(&display, &desktop_window);
 
     int steps = TITLE_HEIGHT - 1;
     int start = 0xCE;

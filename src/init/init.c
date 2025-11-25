@@ -218,8 +218,8 @@ int init_main(void * data)
             .height = 22,
             .flags = GADGET_FLAG_ENABLED,
             .state = 0,
-            .text = "Hello Contraption!",
-            .fg_color = 0xFF0000,
+            .text = "Hello from Contraption!",
+            .fg_color = 0x000000,
             .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE
         }
     };
@@ -231,7 +231,9 @@ int init_main(void * data)
         .left = 1280 / 2 - (330 / 2) ,
         .title = "About CMRX",
         .gadgets = about_gadegets,
-        .gadget_count = 3
+        .gadget_count = 3,
+        .background = BACKGROUND_WINDOW,
+        .flags = WINDOW_FLAG_BORDER
     };
 
     struct CGadget dialog_gadgets[] = {
@@ -253,7 +255,9 @@ int init_main(void * data)
         .left = 300,
         .title = "Settings",
         .gadgets = dialog_gadgets,
-        .gadget_count = 1
+        .gadget_count = 1,
+        .background = BACKGROUND_WINDOW,
+        .flags = WINDOW_FLAG_BORDER
     };
 
     int dialog_win_id = rpc_call(&display, open_window, &dialog_win);

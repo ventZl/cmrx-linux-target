@@ -11,6 +11,15 @@
 
 struct CGadget;
 
+enum CWindowBackground {
+    BACKGROUND_WINDOW = 0,
+    BACKGROUND_DESKTOP
+};
+
+enum CWindowFlags {
+    WINDOW_FLAG_BORDER = 1,
+};
+
 struct CWindow {
     int left, top;
     int width, height;
@@ -18,6 +27,9 @@ struct CWindow {
     int max_width, max_height;
 
     char title[64];
+
+    enum CWindowBackground background;
+    unsigned flags;
 
     struct CGadget * gadgets;
     unsigned gadget_count;
@@ -40,13 +52,9 @@ enum CGadgetType {
     GADGET_CHECKBOX,
     GADGET_TEXT_INPUT,
     GADGET_MENU_ITEM,
-    GADGET_KNOWN_TYPES
-};
+    GADGET_PANEL,            // passive panel rendering window background
 
-enum CGadgetBackground {
-    BACKGROUND_NONE,
-    BACKGROUND_COLOR,
-    BACKGROUND_TEXTURE
+    GADGET_KNOWN_TYPES
 };
 
 enum CGadgetFlags {
