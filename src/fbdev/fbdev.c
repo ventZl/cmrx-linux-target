@@ -8,7 +8,7 @@
 #include <threads.h>
 #include <signal.h>
 
-#include <extra/posix_interrupt.h>
+#include <extra/emulator.h>
 
 #include <SDL3/SDL.h>
 
