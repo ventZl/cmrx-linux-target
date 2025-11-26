@@ -163,6 +163,13 @@ int init_main(void * data)
             .left = 0,
             .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
             .state = 0
+        },
+        {
+            .type = GADGET_PANEL,
+            .width = 398,
+            .height = 32,
+            .top = 22,
+            .left = 1
         }
     };
 
@@ -171,11 +178,11 @@ int init_main(void * data)
         .height = 300,
         .top = 100,
         .left = 300,
-        .title = "Settings",
+        .title = "File Browser",
         .gadgets = dialog_gadgets,
-        .gadget_count = 1,
-        .background = BACKGROUND_WINDOW,
-        .flags = WINDOW_FLAG_BORDER
+        .gadget_count = sizeof(dialog_gadgets)/sizeof(dialog_gadgets[0]),
+        .background = BACKGROUND_WHITE,
+        .flags = WINDOW_FLAG_BORDER,
     };
 
     int dialog_win_id = rpc_call(&display, open_window, &dialog_win);
@@ -238,7 +245,8 @@ int init_main(void * data)
         .width = 90,
         .height = 80,
         .gadgets = file_menu_items,
-        .gadget_count = 4
+        .gadget_count = 4,
+        .background = BACKGROUND_WHITE
     };
 
     int file_menu_id = rpc_call(&display, open_menu, &file_menu);
