@@ -3,6 +3,12 @@
 struct FBRectangle background = { 0, 0, BACKGROUND_SIZE, BACKGROUND_SIZE };
 uint32_t background_pixmap[BACKGROUND_SIZE * BACKGROUND_SIZE];
 
+struct FBRectangle white_background = { 0, 0, 1, 1 };
+uint32_t white_pixmap[1] = { 0xFFFFFFFF };
+
+struct FBRectangle black_background = { 0, 0, 1, 1 };
+uint32_t black_pixmap[1] = { 0x0FF };
+
 struct FBRectangle window_background = { 0, 0, WINDOW_SIZE, WINDOW_SIZE };
 uint32_t window_pixmap[WINDOW_SIZE * WINDOW_SIZE];
 

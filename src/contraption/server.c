@@ -247,6 +247,17 @@ void contraption_render_window(struct CWindowInternal * window)
         case BACKGROUND_DESKTOP:
             rect = &background;
             text = background_pixmap;
+            break;
+
+        case BACKGROUND_WHITE:
+            rect = &white_background;
+            text = white_pixmap;
+            break;
+
+        case BACKGROUND_BLACK:
+            rect = &black_background;
+            text = black_pixmap;
+            break;
 
         default:
             // Do nothing

@@ -16,7 +16,9 @@ struct CGadget;
 
 enum CWindowBackground {
     BACKGROUND_WINDOW = 0,
-    BACKGROUND_DESKTOP
+    BACKGROUND_DESKTOP,
+    BACKGROUND_WHITE,
+    BACKGROUND_BLACK
 };
 
 enum CWindowFlags {
