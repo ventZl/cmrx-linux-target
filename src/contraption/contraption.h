@@ -7,6 +7,9 @@
 #define SCREEN_WIDTH        1280
 #define SCREEN_HEIGHT       800
 
+#define MAX_WINDOWS 64
+#define MAX_GADGETS 256
+
 #define WINDOW_NONE         -1
 
 struct CGadget;

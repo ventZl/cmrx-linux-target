@@ -15,9 +15,6 @@
 #include <assert.h>
 
 
-#define MAX_WINDOWS 64
-#define MAX_GADGETS 256
-
 struct CWindowInternal windows[MAX_WINDOWS];
 struct CGadgetInternal gadgets[MAX_GADGETS];
 
@@ -232,7 +229,7 @@ void contraption_render_text(const struct CExtent * extents, const char * text, 
     {
         top += ((extents->bottom - extents->top) - (metrics.y_maximum - metrics.y_minimum)) / 2;
     }
-    if (flags & TEXT_ALIGN_RIGHT)
+    if (flags & TEXT_ALIGN_BOTTOM)
     {
         top = extents->bottom - metrics.y_maximum - margin_vert;
     }
