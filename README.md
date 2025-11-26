@@ -27,7 +27,23 @@ Application
 
 The application has two purposes. First, it currently stresses the window server by opening some windows. There is also a skeleton of a fuzzer application that should fuzz the kernel.
 
+Prerequisites
+-------------
+
+64-bit Linux systems are supported.
+Working GCC compiler for your system.
+SDL3 including development headers.
+
 Building
 --------
 
-Clone the repository and initialize submodules.
+Clone the repository and initialize submodules. This demo requires SDL3 library to be present in your system.
+
+Build as a typical CMake-based project:
+
+~~~~~~~
+cmake -B Build
+cmake --build build
+build/cmrx-on-linux
+~~~~~~~
+
