@@ -18,6 +18,7 @@ enum CWindowBackground {
 
 enum CWindowFlags {
     WINDOW_FLAG_BORDER = 1,
+    WINDOW_FLAG_BELOW_ALL = 2,
 };
 
 struct CWindow {

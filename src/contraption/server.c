@@ -451,7 +451,7 @@ void contraption_process_button()
         }
 
         // Raise window, if it is not the one on top of the stack and any button was pressed
-        if (&windows[window_stack[0]] != display.cursor_window && BUTTONS_PRESSED(buttons))
+        if (&windows[window_stack[0]] != display.cursor_window && BUTTONS_PRESSED(buttons) && ((display.cursor_window->properties.flags & WINDOW_FLAG_BELOW_ALL) == 0))
         {
             internal_raise_window(display.cursor_window);
             contraption_render_window(display.cursor_window);
@@ -522,7 +522,8 @@ int contraption_main(void * data)
         .height = 800,
         .gadgets = desktop_gadgets,
         .gadget_count = 1,
-        .background = BACKGROUND_DESKTOP
+        .background = BACKGROUND_DESKTOP,
+        .flags = WINDOW_FLAG_BELOW_ALL
     };
 
     contraption_open_window(&display, &desktop_window);
