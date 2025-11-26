@@ -19,6 +19,12 @@ struct Texture {
 extern struct FBRectangle background;
 extern uint32_t background_pixmap[BACKGROUND_SIZE * BACKGROUND_SIZE];
 
+extern struct FBRectangle white_background;
+extern uint32_t white_pixmap[1];
+
+extern struct FBRectangle black_background;
+extern uint32_t black_pixmap[1];
+
 extern struct FBRectangle window_background;
 extern uint32_t window_pixmap[WINDOW_SIZE * WINDOW_SIZE];
 
