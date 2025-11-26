@@ -3,10 +3,11 @@
 #include "gadgets/text.h"
 #include "gadgets/button.h"
 #include "gadgets/menuitem.h"
+#include "gadgets/panel.h"
 
 #include <stddef.h>
 
-static struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
+static const struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
     [GADGET_TITLE_BAR] = {
         render_titlebar,
         pointer_titlebar,
@@ -34,6 +35,13 @@ static struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
         button_down_menuitem,
         button_up_menuitem,
         enter_leave_menuitem
+    },
+    [GADGET_PANEL] = {
+        render_panel,
+        NULL,
+        NULL,
+        NULL,
+        NULL
     }
 };
 

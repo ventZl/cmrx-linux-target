@@ -10,6 +10,7 @@ add_application(contraption
     gadgets/button.c
     gadgets/menuitem.c
     gadgets/text.c
+    gadgets/panel.c
     )
 
 target_link_libraries(contraption stdlib)
