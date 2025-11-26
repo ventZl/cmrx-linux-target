@@ -7,6 +7,6 @@ add_application(fbdev
     fonts/NotoSans14.c
     fonts/NotoSans14b.c
     pointer.c)
-target_link_libraries(fbdev SDL3 stdlib)
+target_link_libraries(fbdev SDL3::SDL3 stdlib)
 
 

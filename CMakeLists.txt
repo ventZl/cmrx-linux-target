@@ -4,6 +4,8 @@ set(CMAKE_C_FLAGS_Debug "-ggdb3")
 
 project(cmrx-on-linux)
 
+find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmrx/cmake)
 add_compile_definitions(-DCMRX_VERBOSE_API_NAMES=1)
 
