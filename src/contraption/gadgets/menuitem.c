@@ -63,7 +63,8 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
                 }
                 gadget->properties.state &= ~GADGET_STATE_ACTIVATED;
             }
-            gadget_handle_render(window, gadget);
+            display.render = 1;
+//            gadget_handle_render(window, gadget);
         }
 
     }
@@ -82,6 +83,6 @@ void enter_leave_menuitem(struct CWindowInternal * window, struct CGadgetInterna
             gadget->properties.state &= ~GADGET_STATE_HOVERED;
         }
     }
-    gadget_handle_render(window, gadget);
+    display.render = 1;
 }
 

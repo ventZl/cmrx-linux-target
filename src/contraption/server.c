@@ -50,8 +50,11 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu)
         if (show)
         {
             contraption_stack_window(win_ref);
+            display.render = 1;
+            notify_object(&display);
         }
     }
+
 
     return win_ref;
 }
@@ -75,7 +78,7 @@ void contraption_stack_window(unsigned win_id)
     window_stack_count++;
 
     display.render = true;
-    notify_object(&display);
+//    notify_object(&display);
 }
 
 struct CExtent contraption_window_extents(struct CWindowInternal * window)
@@ -387,6 +390,7 @@ void contraption_process_pointer()
         struct CPosition rel_pos = { pos.col - extents.left, pos.row - extents.top };
 
         gadget_handle_pointer(display.cursor_window, display.cursor_gadget, &rel_pos, &delta);
+        display.render = 1;
 //        notify_object(&display);
         return;
     }
@@ -425,12 +429,14 @@ void contraption_process_pointer()
 
                         display.cursor_gadget = &gadgets[q];
                         gadget_handle_pointer(window, &gadgets[q], &rel_pos, &delta);
+                        display.render = 1;
 //                        notify_object(&display);
                         return;
                     }
                 }
 
                 display.cursor_gadget = NULL;
+                display.render = 1;
 //                notify_object(&display);
                 return;
             }
@@ -552,11 +558,9 @@ int contraption_main(void * data)
 
     while (1)
     {
-        wait_for_object(&display, 0);
-        if (display.render)
+        if (display.render != 1)
         {
-            contraption_render();
-            display.render = false;
+            wait_for_object(&display, 0);
         }
         if (display.pointer)
         {
@@ -567,6 +571,11 @@ int contraption_main(void * data)
         {
             contraption_process_button();
             display.button = false;
+        }
+        if (display.render)
+        {
+            contraption_render();
+            display.render = false;
         }
     }
 

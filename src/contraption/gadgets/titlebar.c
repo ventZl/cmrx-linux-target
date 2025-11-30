@@ -17,7 +17,7 @@ void pointer_titlebar(struct CWindowInternal * window, struct CGadgetInternal * 
         window->properties.top += delta->top;
         window->properties.left += delta->left;
         contraption_render_window(window);
-//        display.render = true;
+        display.render = true;
     }
 }
 
