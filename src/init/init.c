@@ -198,7 +198,8 @@ int init_main(void * data)
             .text = "New",
             .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
             .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .text_margin_horiz = 5
+            .text_margin_horiz = 5,
+            .sub_menu_id = WINDOW_NONE
         },
         {
             .type = GADGET_MENU_ITEM,
