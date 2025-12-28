@@ -6,6 +6,8 @@ add_application(contraption
     mouse.c
     gadget.c
     resources.c
+    render.c
+    window.c
     gadgets/titlebar.c
     gadgets/button.c
     gadgets/menuitem.c

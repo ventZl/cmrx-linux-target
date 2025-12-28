@@ -7,4 +7,5 @@ void pointer_menuitem(struct CWindowInternal * window, struct CGadgetInternal * 
 void button_down_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, uint32_t buttons);
 void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, uint32_t buttons);
 void enter_leave_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, bool enter);
+void event_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, unsigned event);
 

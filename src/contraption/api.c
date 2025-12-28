@@ -1,5 +1,6 @@
 #include "contraption.h"
 #include "server.h"
+#include "window.h"
 
 #include <cmrx/rpc/implementation.h>
 #include <cmrx/application.h>
@@ -66,5 +67,7 @@ struct Contraption display = {
     .cursor_gadget = NULL,
     .focus_gadget = NULL,
     .cursor_gadget_grab = false,
-    .popup_window = NULL
+    .popup_window = NULL,
+    .menu_opener_window = NULL,
+    .menu_opener_gadget = NULL,
 };

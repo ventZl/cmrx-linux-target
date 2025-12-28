@@ -141,6 +141,8 @@ struct Contraption {
     bool cursor_gadget_grab;
     struct CWindowInternal * popup_window;
     struct CPosition last_pos;
+    struct CWindowInternal * menu_opener_window;
+    struct CGadgetInternal * menu_opener_gadget;
 };
 
 extern struct Contraption display;

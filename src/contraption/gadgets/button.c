@@ -1,4 +1,5 @@
 #include <server.h>
+#include <render.h>
 #include "button.h"
 #include <resources.h>
 

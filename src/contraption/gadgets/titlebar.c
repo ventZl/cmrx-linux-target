@@ -1,4 +1,8 @@
 #include <server.h>
+#include <render.h>
+
+#include <render.h>
+
 #include "titlebar.h"
 #include <resources.h>
 

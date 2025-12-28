@@ -14,6 +14,7 @@ static const struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
         button_down_titlebar,
         button_up_titlebar,
         NULL,
+        NULL,
     },
     [GADGET_BUTTON] = {
         render_button,
@@ -21,27 +22,31 @@ static const struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
         button_down_button,
         button_up_button,
         NULL,
+        NULL,
     },
     [GADGET_TEXT] = {
         render_text,
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        NULL,
     },
     [GADGET_MENU_ITEM] = {
         render_menuitem,
         pointer_menuitem,
         button_down_menuitem,
         button_up_menuitem,
-        enter_leave_menuitem
+        enter_leave_menuitem,
+        event_menuitem,
     },
     [GADGET_PANEL] = {
         render_panel,
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        NULL,
     }
 };
 
@@ -86,3 +91,11 @@ void gadget_handle_enter_leave(struct CWindowInternal * window, struct CGadgetIn
     }
 }
 
+void gadget_handle_event(struct CWindowInternal * window, struct CGadgetInternal * gadget, unsigned event)
+{
+    if (gadget_types[gadget->properties.type].event_callback != NULL)
+    {
+        gadget_types[gadget->properties.type].event_callback(window, gadget, event);
+    }
+
+}

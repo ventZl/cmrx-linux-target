@@ -1,7 +1,9 @@
 #include <server.h>
+#include <render.h>
 #include "button.h"
 #include <gadget.h>
 #include <resources.h>
+#include "window.h"
 
 #include <assert.h>
 
@@ -50,10 +52,8 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
 
             if ((gadget->properties.state & GADGET_STATE_ACTIVATED) == 0)
             {
-                contraption_stack_window(gadget->properties.sub_menu_id);
+                contraption_stack_menu(gadget->properties.sub_menu_id, window, gadget);
                 gadget->properties.state |= GADGET_STATE_ACTIVATED;
-                display.popup_window = contraption_find_window(gadget->properties.sub_menu_id);
-                assert(display.popup_window->id == gadget->properties.sub_menu_id);
             }
             else
             {
@@ -61,7 +61,6 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
                 {
                     contraption_hide_menu();
                 }
-                gadget->properties.state &= ~GADGET_STATE_ACTIVATED;
             }
             display.render = 1;
 //            gadget_handle_render(window, gadget);
@@ -86,3 +85,10 @@ void enter_leave_menuitem(struct CWindowInternal * window, struct CGadgetInterna
     display.render = 1;
 }
 
+void event_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, unsigned event)
+{
+    if (event == EVENT_MENU_CLOSED)
+    {
+        gadget->properties.state &= ~GADGET_STATE_ACTIVATED;
+    }
+}
