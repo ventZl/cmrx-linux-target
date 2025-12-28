@@ -52,8 +52,11 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
 
             if ((gadget->properties.state & GADGET_STATE_ACTIVATED) == 0)
             {
-                contraption_stack_menu(gadget->properties.sub_menu_id, window, gadget);
-                gadget->properties.state |= GADGET_STATE_ACTIVATED;
+                if (gadget->properties.sub_menu_id != WINDOW_NONE)
+                {
+                    contraption_stack_menu(gadget->properties.sub_menu_id, window, gadget);
+                    gadget->properties.state |= GADGET_STATE_ACTIVATED;
+                }
             }
             else
             {
