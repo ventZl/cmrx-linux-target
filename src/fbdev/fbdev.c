@@ -22,7 +22,9 @@ static struct FBDevImpl fbdev_impl = {
 
 struct FBDev fbdev = {
     .vtable = &fbdev_vtable,
-    .impl = &fbdev_impl
+    .impl = &fbdev_impl,
+    .do_cull = false,
+    .cull_area = { 0, 0, 0, 0}
 };
 
 void fbdev_blend(uint32_t * fb, unsigned col, unsigned row, uint32_t rgba)

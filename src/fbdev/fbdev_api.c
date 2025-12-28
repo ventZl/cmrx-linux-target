@@ -12,35 +12,46 @@
 
 IMPLEMENTATION_OF(struct FBDev, struct FBDevVTable);
 
+static inline void fbdev_putpixel(struct FBDev * fbdev, unsigned col, unsigned row, uint32_t color)
+{
+    uint32_t * fb = fbdev->impl->fb;
+
+    if (fbdev->cull_area.col <= col && col < (fbdev->cull_area.col + fbdev->cull_area.width)
+        && fbdev->cull_area.row <= row && row < (fbdev->cull_area.row + fbdev->cull_area.height) )
+    {
+        fb[row * WINDOW_WIDTH + col] = color;
+    }
+}
+
 unsigned pixel_offset(unsigned col, unsigned row) {
     return (col * WINDOW_WIDTH + row) * 4;
 }
 
-static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, const struct FBRectangle * texture, uint32_t * buffer, const struct FBRectangle * cull)
+static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, const struct FBRectangle * texture, uint32_t * buffer)
 {
     mtx_lock(&this->impl->sdl_blit_mutex);
 
     uint32_t * fb = this->impl->fb;
     uint32_t top = 0, left = 0, width = destination->width, height = destination->height;
-    if (cull != NULL)
+    if (this->do_cull)
     {
-        if (cull->col > destination->col)
+        if (this->cull_area.col > destination->col)
         {
-            left = cull->col - destination->col;
+            left = this->cull_area.col - destination->col;
         }
-        if (cull->row > destination->row)
+        if (this->cull_area.row > destination->row)
         {
-            top = cull->row - destination->row;
-        }
-
-        if ((cull->row + cull->height) < (destination->row + destination->height))
-        {
-            height = cull->row + cull->height - destination->row;
+            top = this->cull_area.row - destination->row;
         }
 
-        if ((cull->col + cull->width) < (destination->col + destination->width))
+        if ((this->cull_area.row + this->cull_area.height) < (destination->row + destination->height))
         {
-            width = cull->col + cull->width - destination->col;
+            height = this->cull_area.row + this->cull_area.height - destination->row;
+        }
+
+        if ((this->cull_area.col + this->cull_area.width) < (destination->col + destination->width))
+        {
+            width = this->cull_area.col + this->cull_area.width - destination->col;
         }
     }
     for (unsigned row = top; row < height; ++row) {
@@ -82,7 +93,7 @@ static void fbdev_line(INSTANCE(this), const struct FBPosition * from, const str
     while (true) {
         assert(0 <= col0 &&  col0 < WINDOW_WIDTH);
         assert(0 <= row0 &&  row0 < WINDOW_HEIGHT);
-        fb[(row0) * WINDOW_WIDTH + col0] = color;
+        fbdev_putpixel(this, col0, row0, color);
         long e2 = 2 * error;
         if (e2 >= dy) {
             if (col0 == to->col) break;
@@ -101,7 +112,24 @@ static void fbdev_line(INSTANCE(this), const struct FBPosition * from, const str
 
 }
 
-void circleBres(int xc, int yc, int r, void (*callback)(int, int, int, int, uint32_t, uint8_t, uint32_t *), uint32_t color, uint8_t quadrant, uint32_t * fb){
+static void fbdev_cull(INSTANCE(this), const struct FBRectangle * cull_window)
+{
+    if (cull_window == NULL)
+    {
+        this->do_cull = true;
+        this->cull_area.col = 0;
+        this->cull_area.row = 0;
+        this->cull_area.width = WINDOW_WIDTH;
+        this->cull_area.height = WINDOW_HEIGHT;
+    }
+    else
+    {
+        this->do_cull = true;
+        this->cull_area = *cull_window;
+    }
+}
+
+void circleBres(int xc, int yc, int r, void (*callback)(int, int, int, int, uint32_t, uint8_t, struct FBDev *), uint32_t color, uint8_t quadrant, struct FBDev * fb){
     int x = 0, y = r;
     int d = 3 - 2 * r;
     callback(xc, yc, x, y, color, quadrant, fb);
@@ -124,28 +152,27 @@ void circleBres(int xc, int yc, int r, void (*callback)(int, int, int, int, uint
     }
 }
 
-static void circ_outline(int xc, int yc, int x, int y, uint32_t color, uint8_t quadrant, uint32_t * fb)
+static void circ_outline(int xc, int yc, int x, int y, uint32_t color, uint8_t quadrant, struct FBDev * fb)
 {
-    if (quadrant & FBDEV_QUADRANT_NE) { fb[(yc - y) * WINDOW_WIDTH + xc + x] = color; }
-    if (quadrant & FBDEV_QUADRANT_SE) { fb[(yc + y) * WINDOW_WIDTH + xc + x] = color; }
-    if (quadrant & FBDEV_QUADRANT_NW) { fb[(yc - y) * WINDOW_WIDTH + xc - x] = color; }
-    if (quadrant & FBDEV_QUADRANT_SW) { fb[(yc + y) * WINDOW_WIDTH + xc - x] = color; }
+    if (quadrant & FBDEV_QUADRANT_NE) { fbdev_putpixel(fb, xc + x, yc - y, color); }
+    if (quadrant & FBDEV_QUADRANT_SE) { fbdev_putpixel(fb, xc + x, yc + y, color); }
+    if (quadrant & FBDEV_QUADRANT_NW) { fbdev_putpixel(fb, xc - x, yc - y, color); }
+    if (quadrant & FBDEV_QUADRANT_SW) { fbdev_putpixel(fb, xc - x, yc + y, color); }
 }
 
-static void circ_fill(int xc, int yc, int x, int y, uint32_t color, uint8_t quadrant, uint32_t * fb)
+static void circ_fill(int xc, int yc, int x, int y, uint32_t color, uint8_t quadrant, struct FBDev * fb)
 {
-    if (quadrant & FBDEV_QUADRANT_NE) for (int q = 0; q < x; ++q) { fb[(yc - y) * WINDOW_WIDTH + xc + q] = color; }
-    if (quadrant & FBDEV_QUADRANT_SE) for (int q = 0; q < x; ++q) { fb[(yc + y) * WINDOW_WIDTH + xc + q] = color; }
-    if (quadrant & FBDEV_QUADRANT_NW) for (int q = 0; q < x; ++q) { fb[(yc - y) * WINDOW_WIDTH + xc - q] = color; }
-    if (quadrant & FBDEV_QUADRANT_SW) for (int q = 0; q < x; ++q) { fb[(yc + y) * WINDOW_WIDTH + xc - q] = color; }
-
+    if (quadrant & FBDEV_QUADRANT_NE) for (int q = 0; q < x; ++q) { fbdev_putpixel(fb, xc + q, yc - y, color); }
+    if (quadrant & FBDEV_QUADRANT_SE) for (int q = 0; q < x; ++q) { fbdev_putpixel(fb, xc + q, yc + y, color); }
+    if (quadrant & FBDEV_QUADRANT_NW) for (int q = 0; q < x; ++q) { fbdev_putpixel(fb, xc - q, yc - y, color); }
+    if (quadrant & FBDEV_QUADRANT_SW) for (int q = 0; q < x; ++q) { fbdev_putpixel(fb, xc - q, yc + y, color); }
 }
 
 static void fbdev_arc(INSTANCE(this), const struct FBPosition * center, unsigned radius, uint8_t quadrant, uint32_t color)
 {
     mtx_lock(&this->impl->sdl_blit_mutex);
 
-    circleBres(center->col, center->row, radius, circ_outline, color, quadrant, this->impl->fb);
+    circleBres(center->col, center->row, radius, circ_outline, color, quadrant, this);
 
     this->impl->blit_dirty = true;
     mtx_unlock(&this->impl->sdl_blit_mutex);
@@ -156,7 +183,7 @@ static void fbdev_arc_fill(INSTANCE(this), const struct FBPosition * center, uns
 {
     mtx_lock(&this->impl->sdl_blit_mutex);
 
-    circleBres(center->col, center->row, radius, circ_fill, radius, quadrant, this->impl->fb);
+    circleBres(center->col, center->row, radius, circ_fill, radius, quadrant, this);
 
     this->impl->blit_dirty = true;
     mtx_unlock(&this->impl->sdl_blit_mutex);
@@ -180,5 +207,6 @@ VTABLE struct FBDevVTable fbdev_vtable = {
     fbdev_arc,
     fbdev_arc_fill,
     fbdev_text,
-    fbdev_text_measure
+    fbdev_text_measure,
+    fbdev_cull
 };

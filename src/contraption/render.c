@@ -53,7 +53,7 @@ void contraption_render_frame(const struct CExtent * extents, unsigned radius, u
 void contraption_render_background(const struct CExtent * extents, const struct FBRectangle * coord, uint32_t * background)
 {
     struct FBRectangle dest = {extents->left, extents->top, extents->right - extents->left, extents->bottom - extents->top };
-    rpc_call(&fbdev, blit, &dest, coord, background, NULL);
+    rpc_call(&fbdev, blit, &dest, coord, background);
 }
 
 void contraption_render_text(const struct CExtent * extents, const char * text, uint32_t flags, uint32_t rgb_color, uint8_t margin_horiz, uint8_t margin_vert)
@@ -115,7 +115,7 @@ void contraption_render_window(struct CWindowInternal * window)
         default:
             // Do nothing
     }
-    rpc_call(&fbdev, blit, &dest, rect, text, NULL);
+    rpc_call(&fbdev, blit, &dest, rect, text);
 
     if (window->properties.flags & WINDOW_FLAG_BORDER)
     {

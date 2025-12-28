@@ -185,6 +185,10 @@ int contraption_main(void * data)
 {
     (void) data;
 
+    struct FBRectangle cull_window = { .col = 0, .row = 0, .height = 400, .width = 640 };
+
+    rpc_call(&fbdev, cull, &cull_window);
+
     for (int q = 0; q < BACKGROUND_SIZE * BACKGROUND_SIZE; ++q) {
         background_pixmap[q] = 0x4168A9FF;
         window_pixmap[q] = (q % 64) < 32 ? 0xEAEAEAFF : 0xF0F0F0FF;
