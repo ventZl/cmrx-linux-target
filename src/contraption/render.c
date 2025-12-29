@@ -142,17 +142,131 @@ void contraption_render_window(struct CWindowInternal * window)
     }
 }
 
+/**
+ * Subtracts subtrahend rectangle from minuend rectangle and populates subregion array.
+ *
+ * @param minuend outer area subtracted from
+ * @param subtrahend inner area being subtracted
+ * @param out array of size 4 that will hold rectangular subregions after subtraction
+ * @returns count of regions that were created by subtraction. If subtracted area does not intersect with subtrahend area, the return
+ * value will be -1.
+ */
+int contraption_subtract_rect(const struct FBRectangle * minuend, const struct FBRectangle * subtrahend, struct FBRectangle * out) {
+    // Calculate bounds of the minuend rectangle
+    unsigned m_left = minuend->col;
+    unsigned m_right = minuend->col + minuend->width;
+    unsigned m_top = minuend->row;
+    unsigned m_bottom = minuend->row + minuend->height;
+
+    // Calculate bounds of the subtrahend rectangle
+    unsigned s_left = subtrahend->col;
+    unsigned s_right = subtrahend->col + subtrahend->width;
+    unsigned s_top = subtrahend->row;
+    unsigned s_bottom = subtrahend->row + subtrahend->height;
+
+    // Calculate intersection bounds
+    unsigned i_left = (m_left > s_left) ? m_left : s_left;
+    unsigned i_right = (m_right < s_right) ? m_right : s_right;
+    unsigned i_top = (m_top > s_top) ? m_top : s_top;
+    unsigned i_bottom = (m_bottom < s_bottom) ? m_bottom : s_bottom;
+
+    unsigned idx = 0;
+
+    // Check if there's an intersection
+    if (i_left >= i_right || i_top >= i_bottom) {
+        // No intersection, return the original rectangle
+//        out[idx++] = minuend;
+        return -1;
+    }
+
+    // Top rectangle (above the intersection)
+    if (m_top < i_top) {
+        struct FBRectangle top = {
+            .col = m_left,
+            .row = m_top,
+            .width = minuend->width,
+            .height = i_top - m_top
+        };
+        out[idx++] = top;
+    }
+
+    // Bottom rectangle (below the intersection)
+    if (i_bottom < m_bottom) {
+        struct FBRectangle bottom = {
+            .col = m_left,
+            .row = i_bottom,
+            .width = minuend->width,
+            .height = m_bottom - i_bottom
+        };
+        out[idx++] = bottom;
+    }
+
+    // Left rectangle (to the left of intersection, in the middle vertical section)
+    if (m_left < i_left) {
+        struct FBRectangle left = {
+            .col = m_left,
+            .row = i_top,
+            .width = i_left - m_left,
+            .height = i_bottom - i_top
+        };
+        out[idx++] = left;
+    }
+
+    // Right rectangle (to the right of intersection, in the middle vertical section)
+    if (i_right < m_right) {
+        struct FBRectangle right = {
+            .col = i_right,
+            .row = i_top,
+            .width = m_right - i_right,
+            .height = i_bottom - i_top
+        };
+        out[idx++] = right;
+    }
+
+    return idx;
+}
+
+void contraption_render_culled(struct FBRectangle * area_to_render, unsigned level)
+{
+    int subcount;
+    do {
+        if (level >= contraption_window_count())
+        {
+            // Nothing more to render
+            return;
+        }
+
+        struct CWindowInternal * win = contraption_window_at_offset(level);
+        struct FBRectangle win_extents = { .col = win->properties.left, .row = win->properties.top, .width = win->properties.width, .height = win->properties.height };
+        struct FBRectangle subareas[4];
+        subcount = contraption_subtract_rect(area_to_render, &win_extents, subareas);
+
+        if (subcount >= 0)
+        {
+            rpc_call(&fbdev, cull, area_to_render);
+            // Window at this level in stack falls into culling rectangle, there is something to render
+            contraption_render_window(win);
+        }
+        else
+        {
+            // Window is completely outside the region, skip to next window
+            level++;
+            continue;
+        }
+
+        // Render subregions
+        for (int q = 0; q < subcount; ++q)
+        {
+            contraption_render_culled(&subareas[q], level + 1);
+        }
+    } while (subcount == -1);
+}
+
 void contraption_render()
 {
-    /*    struct FBRectangle dest = { 0, 0, 1280, 800 };
-     *   rpc_call(&fbdev, blit, &dest, &background, background_pixmap, NULL);
-     *   dest.height = 20;
-     *   rpc_call(&fbdev, blit, &dest, &window_background, window_pixmap, NULL);*/
+    struct FBRectangle desktop = { .col = 0, .row = 0, .width = 1280, .height = 800 };
 
-    for (unsigned q = contraption_window_count(); q > 0; --q)
-    {
-        contraption_render_window(contraption_window_at_offset(q - 1));
-    }
+    contraption_render_culled(&desktop, 0);
 }
 
 void contraption_render_damage(struct CExtent * area)
