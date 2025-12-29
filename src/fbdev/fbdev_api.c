@@ -9,19 +9,10 @@
 #include <fonts/NotoSans14b.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 IMPLEMENTATION_OF(struct FBDev, struct FBDevVTable);
 
-static inline void fbdev_putpixel(struct FBDev * fbdev, unsigned col, unsigned row, uint32_t color)
-{
-    uint32_t * fb = fbdev->impl->fb;
-
-    if (fbdev->cull_area.col <= col && col < (fbdev->cull_area.col + fbdev->cull_area.width)
-        && fbdev->cull_area.row <= row && row < (fbdev->cull_area.row + fbdev->cull_area.height) )
-    {
-        fb[row * WINDOW_WIDTH + col] = color;
-    }
-}
 
 unsigned pixel_offset(unsigned col, unsigned row) {
     return (col * WINDOW_WIDTH + row) * 4;
@@ -32,7 +23,7 @@ static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, c
     mtx_lock(&this->impl->sdl_blit_mutex);
 
     uint32_t * fb = this->impl->fb;
-    uint32_t top = 0, left = 0, width = destination->width, height = destination->height;
+    int32_t top = 0, left = 0, width = destination->width, height = destination->height;
     if (this->do_cull)
     {
         if (this->cull_area.col > destination->col)
@@ -47,11 +38,22 @@ static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, c
         if ((this->cull_area.row + this->cull_area.height) < (destination->row + destination->height))
         {
             height = this->cull_area.row + this->cull_area.height - destination->row;
+            printf("Culled height is %d\n", height);
+            if (height < 1)
+            {
+                mtx_unlock(&this->impl->sdl_blit_mutex);
+                return;
+            }
         }
 
         if ((this->cull_area.col + this->cull_area.width) < (destination->col + destination->width))
         {
             width = this->cull_area.col + this->cull_area.width - destination->col;
+            if (width < 1)
+            {
+                mtx_unlock(&this->impl->sdl_blit_mutex);
+                return;
+            }
         }
     }
     for (unsigned row = top; row < height; ++row) {
@@ -192,7 +194,7 @@ static void fbdev_arc_fill(INSTANCE(this), const struct FBPosition * center, uns
 
 static void fbdev_text(INSTANCE(this), const char * text, unsigned x, unsigned y, uint32_t rgb)
 {
-    text_render(text, &noto_sans_14_b, false, x, y, this->impl->fb, rgb);
+    text_render(text, &noto_sans_14_b, false, x, y, this, rgb);
 }
 
 static void fbdev_text_measure(INSTANCE(this), const char * text, FBTextMetrics * metrics)

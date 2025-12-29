@@ -20,6 +20,23 @@ struct FBDevImpl {
     bool blit_dirty;
 };
 
-void fbdev_blend(uint32_t * fb, unsigned col, unsigned row, uint32_t rgba);
+static inline void fbdev_putpixel(struct FBDev * fbdev, unsigned col, unsigned row, uint32_t color)
+{
+    uint32_t * fb = fbdev->impl->fb;
+
+    if (fbdev->cull_area.col <= col && col < (fbdev->cull_area.col + fbdev->cull_area.width)
+        && fbdev->cull_area.row <= row && row < (fbdev->cull_area.row + fbdev->cull_area.height) )
+    {
+        fb[row * WINDOW_WIDTH + col] = color;
+    }
+}
+
+static inline uint32_t fbdev_getpixel(struct FBDev * fbdev, unsigned col, unsigned row)
+{
+    uint32_t * fb = fbdev->impl->fb;
+    return fb[row * WINDOW_WIDTH + col];
+}
+
+void fbdev_blend(struct FBDev* fb, unsigned int col, unsigned int row, uint32_t rgba);
 
 extern const struct FBDevVTable fbdev_vtable;

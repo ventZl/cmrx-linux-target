@@ -8,7 +8,7 @@
 #define START_INDEX 32
 #define END_INDEX 126
 
-static FBTextMetrics render(const char *string, const text_font *font, bool absolute, bool render, int x, int y, uint32_t * fb, uint32_t rgb) {
+static FBTextMetrics render(const char *string, const text_font *font, bool absolute, bool render, int x, int y, struct FBDev * fb, uint32_t rgb) {
 	if (render && fb == NULL)
 	{
 		// No framebuffer, disable rendering
@@ -99,6 +99,6 @@ FBTextMetrics text_measure(const char *string, const text_font *font, bool absol
 	return render(string, font, absolute, false, 0, 0, NULL, 0);
 }
 
-FBTextMetrics text_render(const char *string, const text_font *font, bool absolute, int x, int y, uint32_t * fb, uint32_t rgb) {
+FBTextMetrics text_render(const char *string, const text_font *font, bool absolute, int x, int y, struct FBDev * fb, uint32_t rgb) {
 	return render(string, font, absolute, true, x, y, fb, rgb);
 }

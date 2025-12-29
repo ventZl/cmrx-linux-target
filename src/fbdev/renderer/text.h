@@ -21,6 +21,6 @@ typedef struct {
 } text_font;
 
 FBTextMetrics text_measure(const char *string, const text_font *font, bool absolute);
-FBTextMetrics text_render(const char *string, const text_font *font, bool absolute, int x, int y, uint32_t * fb, uint32_t rgb);
+FBTextMetrics text_render(const char *string, const text_font *font, bool absolute, int x, int y, struct FBDev * fb, uint32_t rgb);
 
 #endif

@@ -24,12 +24,12 @@ struct FBDev fbdev = {
     .vtable = &fbdev_vtable,
     .impl = &fbdev_impl,
     .do_cull = false,
-    .cull_area = { 0, 0, 0, 0}
+    .cull_area = { .col = 0, .row = 0, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT }
 };
 
-void fbdev_blend(uint32_t * fb, unsigned col, unsigned row, uint32_t rgba)
+void fbdev_blend(struct FBDev * fb, unsigned col, unsigned row, uint32_t rgba)
 {
-    uint32_t orig = fb[(row * WINDOW_WIDTH) + col] >> 8;
+    uint32_t orig = fbdev_getpixel(fb, col, row) /*fb[(row * WINDOW_WIDTH) + col]*/ >> 8;
     uint32_t alpha = rgba & 0xFF;
     rgba = rgba >> 8;
     uint32_t out = 0xFF << 24;
@@ -41,13 +41,13 @@ void fbdev_blend(uint32_t * fb, unsigned col, unsigned row, uint32_t rgba)
         const uint32_t m_comp = (o_comp * (0xFF - alpha) + (n_comp * alpha))/ 0xFF;
         out = (out >> 8) | m_comp << 24;
     }
-    fb[(row * WINDOW_WIDTH) + col] = out;
+    fbdev_putpixel(fb, col, row, out);
 }
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(struct FBDev * device)
 {
-    SDL_SetAppMetadata("Example Renderer Streaming Textures", "1.0", "com.example.renderer-streaming-textures");
+    SDL_SetAppMetadata("Virtual FBDev", "1.0", "com.cmrx.virtual-fbdev");
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
