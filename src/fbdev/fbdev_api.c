@@ -38,7 +38,6 @@ static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, c
         if ((this->cull_area.row + this->cull_area.height) < (destination->row + destination->height))
         {
             height = this->cull_area.row + this->cull_area.height - destination->row;
-            printf("Culled height is %d\n", height);
             if (height < 1)
             {
                 mtx_unlock(&this->impl->sdl_blit_mutex);
