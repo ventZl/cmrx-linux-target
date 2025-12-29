@@ -262,15 +262,19 @@ void contraption_render_culled(struct FBRectangle * area_to_render, unsigned lev
     } while (subcount == -1);
 }
 
+static const struct FBRectangle desktop = { .col = 0, .row = 0, .width = 1280, .height = 800 };
+
 void contraption_render()
 {
-    struct FBRectangle desktop = { .col = 0, .row = 0, .width = 1280, .height = 800 };
-
     contraption_render_culled(&desktop, 0);
+    rpc_call(&fbdev, cull, &desktop);
 }
 
 void contraption_render_damage(struct CExtent * area)
 {
+    struct FBRectangle damaged = { .col = area->left, .row = area->top, .width = area->right - area->left, .height = area->bottom - area-> top };
 
+    contraption_render_culled(&damaged, 0);
+    rpc_call(&fbdev, cull, &desktop);
 }
 

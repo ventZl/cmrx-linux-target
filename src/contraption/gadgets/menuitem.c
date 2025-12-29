@@ -65,8 +65,6 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
                     contraption_hide_menu();
                 }
             }
-            display.render = 1;
-//            gadget_handle_render(window, gadget);
         }
 
     }
@@ -84,8 +82,8 @@ void enter_leave_menuitem(struct CWindowInternal * window, struct CGadgetInterna
         {
             gadget->properties.state &= ~GADGET_STATE_HOVERED;
         }
+        contraption_render_window(window);
     }
-    display.render = 1;
 }
 
 void event_menuitem(struct CWindowInternal * window, struct CGadgetInternal * gadget, unsigned event)

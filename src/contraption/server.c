@@ -76,8 +76,6 @@ void contraption_process_pointer()
         struct CPosition rel_pos = { pos.col - extents.left, pos.row - extents.top };
 
         gadget_handle_pointer(display.cursor_window, display.cursor_gadget, &rel_pos, &delta);
-        display.render = 1;
-//        notify_object(&display);
         return;
     }
 
@@ -115,15 +113,11 @@ void contraption_process_pointer()
 
                         display.cursor_gadget = &gadgets[q];
                         gadget_handle_pointer(window, &gadgets[q], &rel_pos, &delta);
-                        display.render = 1;
-//                        notify_object(&display);
                         return;
                     }
                 }
 
                 display.cursor_gadget = NULL;
-                display.render = 1;
-//                notify_object(&display);
                 return;
             }
     }

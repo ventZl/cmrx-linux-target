@@ -70,8 +70,6 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu)
         if (show)
         {
             contraption_stack_window(win_ref);
-            display.render = 1;
-            notify_object(&display);
         }
     }
 
@@ -81,7 +79,8 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu)
 
 void contraption_stack_window(unsigned win_id)
 {
-    int win_cursor = contraption_window_offset(contraption_find_window(win_id));
+    struct CWindowInternal * stacked_win = contraption_find_window(win_id);
+    int win_cursor = contraption_window_offset(stacked_win);
     for (int q = window_stack_count; q > 0; --q)
     {
         window_stack[q] = window_stack[q - 1];
@@ -90,8 +89,7 @@ void contraption_stack_window(unsigned win_id)
     window_stack[0] = win_cursor;
     window_stack_count++;
 
-    display.render = true;
-    //    notify_object(&display);
+    contraption_render_window(stacked_win);
 }
 
 void contraption_stack_menu(unsigned int menu_id, struct CWindowInternal * window, struct CGadgetInternal * gadget)
