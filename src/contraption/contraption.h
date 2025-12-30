@@ -46,6 +46,7 @@ struct CWindowInternal {
     int menu_window_id;
     int id;
     bool is_menu;
+    unsigned owner_thread;
 };
 
 #define BUTTON_RADIUS 4
@@ -99,6 +100,7 @@ struct CGadget {
     const char * text;
     uint32_t text_flags;
     int sub_menu_id;
+    unsigned event_id;
 
     uint32_t state;
     uint32_t flags;
@@ -127,6 +129,10 @@ struct ContraptionVTable {
     int (*open_menu)(INSTANCE(this), const struct CWindow * menu);
     void (*close_menu)(INSTANCE(this), int menu);
     void (*attach_menu)(INSTANCE(this), int window, int menu);
+
+    int (*open_connection)(INSTANCE(this), void * notification_object);
+    void (*close_connection)(INSTANCE(this));
+    bool (*get_event)(INSTANCE(this), unsigned * event_id, unsigned * object_id);
 };
 
 struct Contraption {

@@ -8,6 +8,7 @@ add_application(contraption
     resources.c
     render.c
     window.c
+    client.c
     gadgets/titlebar.c
     gadgets/button.c
     gadgets/menuitem.c

@@ -3,6 +3,7 @@
 #include <contraption.h>
 
 enum GadgetEvent {
+    EVENT_NONE = 0,
     EVENT_MENU_CLOSED
 };
 
