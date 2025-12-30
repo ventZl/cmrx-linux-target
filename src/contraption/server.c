@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <cmrx/ipc/notify.h>
+#include <cmrx/ipc/thread.h>
 
 #include "contraption.h"
 #include "server.h"
@@ -12,6 +13,7 @@
 #include "render.h"
 #include "resources.h"
 #include "window.h"
+#include "client.h"
 
 #include "api_priv.h"
 
@@ -175,6 +177,21 @@ void contraption_process_button()
     }
 }
 
+/* Generate gray gradient of dimension [1 x steps]
+ */
+void generate_gradient_gray(int steps, uint32_t start_shade, uint32_t end_shade, uint32_t * gradient)
+{
+    int start = start_shade;
+    int stop = end_shade;
+    int step = (stop - start) / steps;
+
+    for (unsigned q = 0; q < steps; ++q)
+    {
+        int color = start + step * q;
+        gradient[q] = (color << 24) | (color << 16) | (color << 8) | 0xFF;
+    }
+}
+
 int contraption_main(void * data)
 {
     (void) data;
@@ -205,8 +222,13 @@ int contraption_main(void * data)
         .flags = WINDOW_FLAG_BELOW_ALL
     };
 
+    contraption_init_client();
+    contraption_open_connection(&display, &desktop_window);
     contraption_open_window(&display, &desktop_window);
 
+    generate_gradient_gray(TITLE_HEIGHT - 1, 0xCE, 0xA8, title_pixmap);
+    generate_gradient_gray(BUTTON_HEIGHT - 1, 0xDE, 0x98, button_pixmap);
+/*
     int steps = TITLE_HEIGHT - 1;
     int start = 0xCE;
     int stop = 0xA8;
@@ -216,7 +238,7 @@ int contraption_main(void * data)
     {
         int color = start + step * q;
         title_pixmap[q] = (color << 24) | (color << 16) | (color << 8) | 0xFF;
-    }
+    }*/
 
     title_pixmap[0] = 0xE3E3E3FF;
     title_pixmap[TITLE_HEIGHT - 1] = 0x515151FF;

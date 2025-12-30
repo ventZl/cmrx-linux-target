@@ -11,6 +11,9 @@
 #define TITLE_WIDTH 1
 #define TITLE_HEIGHT 22
 
+#define BUTTON_WIDTH 1
+#define BUTTON_HEIGHT 30
+
 struct Texture {
     struct FBRectangle size;
     uint32_t pixmap[];
@@ -30,6 +33,9 @@ extern uint32_t window_pixmap[WINDOW_SIZE * WINDOW_SIZE];
 
 extern struct FBRectangle title_background;
 extern uint32_t title_pixmap[TITLE_WIDTH * TITLE_HEIGHT];
+
+extern struct FBRectangle button_background;
+extern uint32_t button_pixmap[BUTTON_WIDTH * BUTTON_HEIGHT];
 
 extern struct FBRectangle selected_background;
 extern uint32_t selected_pixmap[1];

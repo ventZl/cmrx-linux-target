@@ -18,3 +18,5 @@ uint32_t title_pixmap[TITLE_WIDTH * TITLE_HEIGHT];
 struct FBRectangle selected_background = {0, 0, 1, 1};
 uint32_t selected_pixmap[1] = { 0x2457f0FF };
 
+struct FBRectangle button_background = { 0, 0, BUTTON_WIDTH, BUTTON_HEIGHT };
+uint32_t button_pixmap[BUTTON_WIDTH * BUTTON_HEIGHT];
