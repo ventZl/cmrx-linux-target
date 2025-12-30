@@ -45,26 +45,50 @@ struct CWindowInternal * contraption_find_window(int window_id)
     return NULL;
 }
 
-int contraption_load_window(const struct CWindow* window, bool show, bool menu)
+struct CGadget * contraption_load_gadgets(int owning_window, struct CGadget * new_gadgets, unsigned count)
+{
+    if (count > MAX_GADGETS - gadget_count)
+    {
+        return NULL;
+    }
+
+    struct CGadget * first_gadget = (struct CGadget *) &gadgets[gadget_count];
+
+    for (int q = 0; q < count; ++q)
+    {
+        gadgets[gadget_count].properties = new_gadgets[q];
+        gadgets[gadget_count].window_id = owning_window;
+        gadget_count++;
+    }
+
+    return first_gadget;
+}
+
+int contraption_load_window(const struct CWindow* window, bool show, bool menu, unsigned owning_client)
 {
     int win_ref = -1;
     if (window_count < MAX_WINDOWS) {
         win_ref = window_id++;
         int win_cursor = window_count;
 
-        windows[win_cursor].properties = *window;
-        windows[win_cursor].id = win_ref;
-        windows[win_cursor].is_menu = menu;
-        windows[win_cursor].menu_window_id = WINDOW_NONE;
-        windows[win_cursor].properties.gadgets = (struct CGadget *) &gadgets[gadget_count];
+        struct CWindowInternal * new_window = &windows[win_cursor];
 
-        window_count++;
+        new_window->properties = *window;
+        new_window->id = win_ref;
+        new_window->is_menu = menu;
+        new_window->menu_window_id = WINDOW_NONE;
+        new_window->owner_thread = owning_client;
 
-        for (int q = 0; q < window->gadget_count; ++q)
+        new_window->properties.gadgets = contraption_load_gadgets(win_ref, window->gadgets, window->gadget_count);
+
+        if (new_window->properties.gadgets != NULL)
         {
-            gadgets[gadget_count].properties = window->gadgets[q];
-            gadgets[gadget_count].window_id = win_ref;
-            gadget_count++;
+            window_count++;
+        }
+        else
+        {
+            new_window->id = WINDOW_NONE;
+            return -1;
         }
 
         if (show)
@@ -73,8 +97,12 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu)
         }
     }
 
-
     return win_ref;
+}
+
+void contraption_free_window(struct CWindowInternal * window)
+{
+
 }
 
 void contraption_stack_window(unsigned win_id)
@@ -180,6 +208,28 @@ void internal_raise_window(const struct CWindowInternal * win)
     //    display.render = true;
 }
 
+void contraption_move_window(struct CWindowInternal * window, unsigned col, unsigned row)
+{
+    if (window == NULL)
+    {
+        return;
+    }
+
+    window->properties.top = row;
+    window->properties.left = col;
+}
+
+void contraption_resize_window(struct CWindowInternal * window, unsigned width, unsigned height)
+{
+    if (window == NULL)
+    {
+        return;
+    }
+
+    window->properties.width = width;
+    window->properties.height = height;
+
+}
 
 struct CWindowInternal * contraption_active_window()
 {

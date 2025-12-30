@@ -2,10 +2,13 @@
 
 #include "contraption.h"
 
-int contraption_load_window(const struct CWindow* window, bool show, bool menu);
+int contraption_load_window(const struct CWindow* window, bool show, bool menu, unsigned owning_client);
 void contraption_stack_window(unsigned win_id);
 void contraption_stack_menu(unsigned menu_id, struct CWindowInternal * window, struct CGadgetInternal * gadget);
 void contraption_unstack_window(unsigned win_id);
+void contraption_move_window(struct CWindowInternal * window, unsigned col, unsigned row);
+void contraption_resize_window(struct CWindowInternal * window, unsigned width, unsigned height);
+void contraption_free_window(struct CWindowInternal * window);
 struct CWindowInternal * contraption_find_window(int window_id);
 
 /* Get count of visible windows
