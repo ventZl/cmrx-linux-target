@@ -2,7 +2,7 @@
 #include <render.h>
 
 #include <render.h>
-
+#include <window.h>
 #include "titlebar.h"
 #include <resources.h>
 
@@ -18,10 +18,8 @@ void pointer_titlebar(struct CWindowInternal * window, struct CGadgetInternal * 
 {
     if (gadget->properties.state & GADGET_STATE_ACTIVATED)
     {
-        window->properties.top += delta->top;
-        window->properties.left += delta->left;
+        contraption_move_window(window, window->properties.left + delta->left, window->properties.top + delta->top);
         contraption_render_window(window);
-        display.render = true;
     }
 }
 
