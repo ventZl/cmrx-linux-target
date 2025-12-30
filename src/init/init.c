@@ -23,6 +23,15 @@
 #define SCREEN_WIDTH_STR _STR(SCREEN_WIDTH)
 #define SCREEN_HEIGHT_STR _STR(SCREEN_HEIGHT)
 
+enum InitEvents {
+    EVENT_FILE_NEW = 1024,
+    EVENT_FILE_OPEN,
+    EVENT_FILE_SAVE,
+    EVENT_FILE_QUIT,
+
+    EVENT_BUTTON_OK
+};
+
 int init_main(void * data)
 {
     struct CGadget about_gadgets[] = {
@@ -35,7 +44,8 @@ int init_main(void * data)
             .flags = GADGET_FLAG_ENABLED,
             .state = 0,
             .text = "OK",
-            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE
+            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
+            .event_id = EVENT_BUTTON_OK
 
         },
         {
@@ -185,6 +195,8 @@ int init_main(void * data)
         .flags = WINDOW_FLAG_BORDER,
     };
 
+    bool connected = rpc_call(&display, open_connection, &dialog_win);
+    assert(connected);
     int dialog_win_id = rpc_call(&display, open_window, &dialog_win);
     int about_win_id = rpc_call(&display, open_window, &about_win);
 
@@ -199,7 +211,8 @@ int init_main(void * data)
             .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
             .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
             .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE
+            .sub_menu_id = WINDOW_NONE,
+            .event_id = EVENT_FILE_NEW
         },
         {
             .type = GADGET_MENU_ITEM,
@@ -211,7 +224,8 @@ int init_main(void * data)
             .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
             .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
             .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE
+            .sub_menu_id = WINDOW_NONE,
+            .event_id = EVENT_FILE_OPEN
 
         },
         {
@@ -224,7 +238,9 @@ int init_main(void * data)
             .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
             .flags = 0,
             .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE
+            .sub_menu_id = WINDOW_NONE,
+            .event_id = EVENT_FILE_SAVE
+
         },
         {
             .type = GADGET_MENU_ITEM,
@@ -236,7 +252,9 @@ int init_main(void * data)
             .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
             .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
             .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE
+            .sub_menu_id = WINDOW_NONE,
+            .event_id = EVENT_FILE_QUIT
+
         },
     };
 
@@ -292,7 +310,24 @@ int init_main(void * data)
 
     while (1)
     {
-        sleep(1);
+        wait_for_object(&dialog_win, 0);
+        unsigned event_id, object_id;
+        bool event = rpc_call(&display, get_event, &event_id, &object_id);
+        printf("Event!\n");
+        assert(event);
+        switch (event_id) {
+            case EVENT_FILE_NEW:
+            case EVENT_FILE_OPEN:
+            case EVENT_FILE_SAVE:
+            case EVENT_FILE_QUIT:
+                break;
+
+            case EVENT_BUTTON_OK:
+                if (object_id == about_win_id)
+                {
+                    rpc_call(&display, close_window, about_win_id);
+                }
+        }
 /*        int rv = rpc_call(&server, service);
         int my_tid = get_tid();
         printf("I am thread %d\n", my_tid);*/
