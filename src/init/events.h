@@ -1,0 +1,15 @@
+#pragma once
+
+
+enum InitEvents {
+    EVENT_INIT_ABOUT = 1024,
+    EVENT_INIT_PREFERENCES,
+    EVENT_FILE_NEW,
+    EVENT_FILE_OPEN,
+    EVENT_FILE_SAVE,
+    EVENT_FILE_QUIT,
+
+    EVENT_BUTTON_OK
+};
+
+

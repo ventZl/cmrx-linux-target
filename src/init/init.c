@@ -16,306 +16,52 @@
 
 #include "../contraption/contraption.h"
 #include "server.h"
+#include "events.h"
+#include "about_dlg.h"
+#include "file_dlg.h"
+#include "navigator_win.h"
+#include "init_menu.h"
+#include "preferences_dlg.h"
 
-#define _STR2(arg)     # arg
-#define _STR(arg)   _STR2(arg)
-#define MAX_WINDOWS_STR _STR(MAX_WINDOWS)
-#define SCREEN_WIDTH_STR _STR(SCREEN_WIDTH)
-#define SCREEN_HEIGHT_STR _STR(SCREEN_HEIGHT)
-
-enum InitEvents {
-    EVENT_FILE_NEW = 1024,
-    EVENT_FILE_OPEN,
-    EVENT_FILE_SAVE,
-    EVENT_FILE_QUIT,
-
-    EVENT_BUTTON_OK
-};
+int about_win_id = WINDOW_NONE;
+int preferences_win_id = WINDOW_NONE;
 
 int init_main(void * data)
 {
-    struct CGadget about_gadgets[] = {
-        {
-            .type = GADGET_BUTTON,
-            .top = 140,
-            .left = 330/2 - 40,
-            .width = 80,
-            .height = 30,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "OK",
-            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
-            .event_id = EVENT_BUTTON_OK
-
-        },
-        {
-            .type = GADGET_TITLE_BAR,
-            .top = 0,
-            .left = 0,
-            .width = 330,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .state = 0
-        },
-        {
-            .type = GADGET_TEXT,
-            .top = 35,
-            .left = 10,
-            .width = 310,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "CMRX master @ 1c68fc4!",
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_TOP
-        },
-
-        {
-            .type = GADGET_TEXT,
-            .top = 57,
-            .left = 0,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "Target platform:",
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_RIGHT | TEXT_ALIGN_TOP
-        },
-        {
-            .type = GADGET_TEXT,
-            .top = 57,
-            .left = 165,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "Linux x86_64",
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_TOP
-        },
-
-        {
-            .type = GADGET_TEXT,
-            .top = 79,
-            .left = 0,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "Screen resolution:",
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_RIGHT
-        },
-        {
-            .type = GADGET_TEXT,
-            .top = 79,
-            .left = 165,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = SCREEN_WIDTH_STR "x" SCREEN_HEIGHT_STR,
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_LEFT
-        },
-
-        {
-            .type = GADGET_TEXT,
-            .top = 101,
-            .left = 0,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = "Window arena:",
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_RIGHT
-        },
-        {
-            .type = GADGET_TEXT,
-            .top = 101,
-            .left = 165,
-            .width = 165,
-            .height = 22,
-            .flags = GADGET_FLAG_ENABLED,
-            .state = 0,
-            .text = MAX_WINDOWS_STR,
-            .text_margin_horiz = 5,
-            .fg_color = 0x000000,
-            .text_flags = TEXT_ALIGN_LEFT
-        },
-    };
-
-    struct CWindow about_win = {
-        .width = 330,
-        .height = 190,
-        .top = 90,
-        .left = 1280 / 2 - (330 / 2) ,
-        .title = "About CMRX",
-        .gadgets = about_gadgets,
-        .gadget_count = sizeof(about_gadgets)/sizeof(about_gadgets[0]),
-        .background = BACKGROUND_WINDOW,
-        .flags = WINDOW_FLAG_BORDER
-    };
-
-    struct CGadget dialog_gadgets[] = {
-        {
-            .type = GADGET_TITLE_BAR,
-            .width = 400,
-            .height = 22,
-            .top = 0,
-            .left = 0,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .state = 0
-        },
-        {
-            .type = GADGET_PANEL,
-            .width = 398,
-            .height = 32,
-            .top = 22,
-            .left = 1
-        }
-    };
-
-    struct CWindow dialog_win = {
-        .width = 400,
-        .height = 300,
-        .top = 100,
-        .left = 300,
-        .title = "File Browser",
-        .gadgets = dialog_gadgets,
-        .gadget_count = sizeof(dialog_gadgets)/sizeof(dialog_gadgets[0]),
-        .background = BACKGROUND_WHITE,
-        .flags = WINDOW_FLAG_BORDER,
-    };
 
     bool connected = rpc_call(&display, open_connection, &dialog_win);
     assert(connected);
     int dialog_win_id = rpc_call(&display, open_window, &dialog_win);
-    int about_win_id = rpc_call(&display, open_window, &about_win);
 
-    struct CGadget file_menu_items[] = {
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 0,
-            .left = 0,
-            .width = 90,
-            .height = 20,
-            .text = "New",
-            .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE,
-            .event_id = EVENT_FILE_NEW
-        },
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 19,
-            .left = 0,
-            .width = 90,
-            .height = 20,
-            .text = "Open...",
-            .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE,
-            .event_id = EVENT_FILE_OPEN
+    init_app_menu.gadgets[0].sub_menu_id = rpc_call(&display, open_menu, &init_menu);
+    init_app_menu.gadgets[1].sub_menu_id = rpc_call(&display, open_menu, &file_menu);
 
-        },
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 39,
-            .left = 0,
-            .width = 90,
-            .height = 20,
-            .text = "Save",
-            .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-            .flags = 0,
-            .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE,
-            .event_id = EVENT_FILE_SAVE
-
-        },
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 59,
-            .left = 0,
-            .width = 90,
-            .height = 20,
-            .text = "Quit",
-            .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .text_margin_horiz = 5,
-            .sub_menu_id = WINDOW_NONE,
-            .event_id = EVENT_FILE_QUIT
-
-        },
-    };
-
-    struct CWindow file_menu = {
-        .top = 20,
-        .left = 0,
-        .width = 90,
-        .height = 80,
-        .gadgets = file_menu_items,
-        .gadget_count = 4,
-        .background = BACKGROUND_WHITE
-    };
-
-    int file_menu_id = rpc_call(&display, open_menu, &file_menu);
-
-    struct CGadget about_menu_items[] = {
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 0,
-            .left = 0,
-            .width = 40,
-            .height = 20,
-            .text = "File",
-            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
-            .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-            .sub_menu_id = file_menu_id,
-        },
-        {
-            .type = GADGET_MENU_ITEM,
-            .top = 0,
-            .left = 39,
-            .width = 40,
-            .height = 20,
-            .text = "Help",
-            .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
-            .flags = 0 //GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE
-        },
-    };
-
-    struct CWindow about_menu = {
-        .top = 0,
-        .left = 0,
-        .width = 1280,
-        .height = 20,
-        .gadgets = about_menu_items,
-        .gadget_count = 2
-    };
-
-
-
-    int about_menu_id = rpc_call(&display, open_menu, &about_menu);
-    rpc_call(&display, attach_menu, about_win_id, about_menu_id);
+    int about_menu_id = rpc_call(&display, open_menu, &init_app_menu);
+    rpc_call(&display, attach_menu, dialog_win_id, about_menu_id);
 
     while (1)
     {
         wait_for_object(&dialog_win, 0);
         unsigned event_id, object_id;
         bool event = rpc_call(&display, get_event, &event_id, &object_id);
-        printf("Event!\n");
+        printf("Event %d in %d!\n", event_id, object_id);
         assert(event);
         switch (event_id) {
+            case EVENT_INIT_ABOUT:
+                if (about_win_id == WINDOW_NONE)
+                {
+                    about_win_id = rpc_call(&display, open_window, &about_win);
+                    rpc_call(&display, attach_menu, about_win_id, about_menu_id);
+                }
+                break;
+
+            case EVENT_INIT_PREFERENCES:
+                if (preferences_win_id == WINDOW_NONE)
+                {
+                    preferences_win_id = rpc_call(&display, open_window, &preferences_win);
+                    rpc_call(&display, attach_menu, preferences_win_id, about_menu_id);
+                }
+                break;
             case EVENT_FILE_NEW:
             case EVENT_FILE_OPEN:
             case EVENT_FILE_SAVE:
@@ -326,6 +72,7 @@ int init_main(void * data)
                 if (object_id == about_win_id)
                 {
                     rpc_call(&display, close_window, about_win_id);
+                    about_win_id = WINDOW_NONE;
                 }
         }
 /*        int rv = rpc_call(&server, service);
