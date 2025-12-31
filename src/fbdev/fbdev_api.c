@@ -7,6 +7,12 @@
 #include "renderer/text.h"
 #include <fonts/NotoSans14.h>
 #include <fonts/NotoSans14b.h>
+#include <fonts/NotoSans14bi.h>
+#include <fonts/NotoSans14i.h>
+#include <fonts/HackNerdMono14.h>
+#include <fonts/HackNerdMono14b.h>
+#include <fonts/HackNerdMono14bi.h>
+#include <fonts/HackNerdMono14i.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -191,15 +197,53 @@ static void fbdev_arc_fill(INSTANCE(this), const struct FBPosition * center, uns
 
 }
 
+typedef struct {
+    unsigned font_id;
+    const text_font * font;
+} FontEntry;
+
+FontEntry fonts[] = {
+    { FONT_NORMAL, &noto_sans_14 },
+    { FONT_BOLD, &noto_sans_14_b },
+    { FONT_BOLD | FONT_ITALIC, &noto_sans_14_bi},
+    { FONT_ITALIC, &noto_sans_14_i},
+    { FONT_MONO, &hack_nerd_14 },
+    { FONT_MONO | FONT_BOLD, &hack_nerd_14_b },
+    { FONT_MONO | FONT_ITALIC, &hack_nerd_14_i },
+    { FONT_MONO | FONT_BOLD | FONT_ITALIC, &hack_nerd_14_bi }
+};
+
+static const text_font * fbdev_select_font(unsigned font)
+{
+    for (int q = 0; q < sizeof(fonts)/sizeof(fonts[0]); ++q)
+    {
+        if (fonts[q].font_id == font)
+        {
+            return fonts[q].font;
+        }
+    }
+    return NULL;
+}
+
 static void fbdev_text(INSTANCE(this), const char * text, unsigned x, unsigned y, uint32_t rgb)
 {
-    text_render(text, &noto_sans_14_b, false, x, y, this, rgb);
+    text_render(text, this->current_font, false, x, y, this, rgb);
 }
 
 static void fbdev_text_measure(INSTANCE(this), const char * text, FBTextMetrics * metrics)
 {
-    FBTextMetrics own_metrics = text_measure(text, &noto_sans_14_b, false);
+    FBTextMetrics own_metrics = text_measure(text, this->current_font, false);
     *metrics = own_metrics;
+}
+
+static void fbdev_set_font(INSTANCE(this), enum FBFont font)
+{
+    this->current_font = fbdev_select_font(font);
+    if (this->current_font == NULL)
+    {
+        // Fallback
+        this->current_font = &noto_sans_14;
+    }
 }
 
 VTABLE struct FBDevVTable fbdev_vtable = {
@@ -209,5 +253,6 @@ VTABLE struct FBDevVTable fbdev_vtable = {
     fbdev_arc_fill,
     fbdev_text,
     fbdev_text_measure,
-    fbdev_cull
+    fbdev_cull,
+    fbdev_set_font
 };

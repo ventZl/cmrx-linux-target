@@ -11,6 +11,7 @@
 #include <extra/emulator.h>
 
 #include <SDL3/SDL.h>
+#include <fonts/NotoSans14.h>
 
 static struct FBDevImpl fbdev_impl = {
     .running = true,
@@ -24,7 +25,8 @@ struct FBDev fbdev = {
     .vtable = &fbdev_vtable,
     .impl = &fbdev_impl,
     .do_cull = false,
-    .cull_area = { .col = 0, .row = 0, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT }
+    .cull_area = { .col = 0, .row = 0, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT },
+    .current_font = &noto_sans_14
 };
 
 void fbdev_blend(struct FBDev * fb, unsigned col, unsigned row, uint32_t rgba)

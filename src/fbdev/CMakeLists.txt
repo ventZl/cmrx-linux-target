@@ -6,6 +6,12 @@ add_application(fbdev
     renderer/text.c
     fonts/NotoSans14.c
     fonts/NotoSans14b.c
+    fonts/NotoSans14bi.c
+    fonts/NotoSans14i.c
+    fonts/HackNerdMono14.c
+    fonts/HackNerdMono14b.c
+    fonts/HackNerdMono14bi.c
+    fonts/HackNerdMono14i.c
     pointer.c)
 target_link_libraries(fbdev SDL3::SDL3 stdlib)
 

@@ -14,11 +14,13 @@ typedef struct {
 	const uint8_t *data;
 } text_glyph;
 
-typedef struct {
+struct text_font_t {
 	const uint8_t bit_depth;
 	const uint8_t line_height;
 	const text_glyph *glyphs;
-} text_font;
+};
+
+typedef struct text_font_t text_font;
 
 FBTextMetrics text_measure(const char *string, const text_font *font, bool absolute);
 FBTextMetrics text_render(const char *string, const text_font *font, bool absolute, int x, int y, struct FBDev * fb, uint32_t rgb);

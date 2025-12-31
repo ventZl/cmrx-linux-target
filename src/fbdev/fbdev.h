@@ -34,6 +34,13 @@ typedef struct {
     unsigned int y_maximum;
 } FBTextMetrics;
 
+enum FBFont {
+    FONT_NORMAL = 0,
+    FONT_BOLD = 1 << 0,
+    FONT_ITALIC = 1 << 1,
+    FONT_MONO = 1 << 2
+};
+
 struct FBDevVTable {
     void (*blit)(INSTANCE(this), const struct FBRectangle * destination, const struct FBRectangle * texture, uint32_t * buffer);
     void (*line)(INSTANCE(this), const struct FBPosition * from, const struct FBPosition * to, uint32_t color);
@@ -42,15 +49,19 @@ struct FBDevVTable {
     void (*text)(INSTANCE(this), const char * text, unsigned x, unsigned y, uint32_t rgb);
     void (*text_measure)(INSTANCE(this), const char * text, FBTextMetrics * metrics);
     void (*cull)(INSTANCE(this), const struct FBRectangle * window);
+    void (*set_font)(INSTANCE(this), unsigned font);
 };
 
 struct FBDevImpl;
+
+struct text_font_t;
 
 struct FBDev {
     const struct FBDevVTable * vtable;
     struct FBDevImpl * impl;
     bool do_cull;
     struct FBRectangle cull_area;
+    const struct text_font_t * current_font;
 };
 
 extern struct FBDev fbdev;
