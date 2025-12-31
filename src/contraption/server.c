@@ -127,15 +127,6 @@ void contraption_process_pointer()
 //    notify_object(&display);
 }
 
-void contraption_hide_menu()
-{
-    assert(display.menu_opener_window != NULL);
-    assert(display.menu_opener_gadget != NULL);
-    contraption_unstack_window(display.popup_window->id);
-    gadget_handle_event(display.menu_opener_window, display.menu_opener_gadget, EVENT_MENU_CLOSED);
-    display.menu_opener_window = NULL;
-    display.menu_opener_gadget = NULL;
-}
 
 void contraption_process_button()
 {
@@ -151,8 +142,7 @@ void contraption_process_button()
         if ((display.popup_window != NULL) && (display.cursor_window != display.popup_window) && BUTTONS_PRESSED(buttons))
         {
             contraption_hide_menu();
-            display.popup_window = NULL;
-        }
+       }
 
         // Raise window, if it is not the one on top of the stack and any button was pressed
         if (contraption_window_at_offset(0) != display.cursor_window && BUTTONS_PRESSED(buttons) && ((display.cursor_window->properties.flags & WINDOW_FLAG_BELOW_ALL) == 0))
@@ -223,6 +213,7 @@ int contraption_main(void * data)
     };
 
     contraption_init_client();
+    contraption_window_init();
     contraption_open_connection(&display, &desktop_window);
     contraption_open_window(&display, &desktop_window);
 

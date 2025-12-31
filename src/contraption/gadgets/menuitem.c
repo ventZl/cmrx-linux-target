@@ -71,6 +71,7 @@ void button_up_menuitem(struct CWindowInternal * window, struct CGadgetInternal 
         if (gadget->properties.event_id != EVENT_NONE)
         {
             contraption_send_event(window->owner_thread, gadget->properties.event_id, window->id);
+            contraption_hide_menu();
         }
     }
 }

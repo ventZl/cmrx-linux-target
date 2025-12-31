@@ -1,17 +1,27 @@
 #include "window.h"
 #include "render.h"
 #include "server.h"
+#include "gadget.h"
 #include <cmrx/ipc/notify.h>
 #include <assert.h>
+#include <stdio.h>
 
 unsigned window_stack[MAX_WINDOWS];
 unsigned window_stack_count = 0;
 
 struct CWindowInternal windows[MAX_WINDOWS];
 struct CGadgetInternal gadgets[MAX_GADGETS];
-unsigned window_count = 0;
+unsigned last_window = 0;
 unsigned window_id = 1;
 unsigned gadget_count = 0;
+
+void contraption_window_init()
+{
+    for (int q = 0; q < MAX_WINDOWS; ++q)
+    {
+        windows[q].id = WINDOW_NONE;
+    }
+}
 
 unsigned contraption_window_count()
 {
@@ -27,14 +37,14 @@ struct CWindowInternal * contraption_window_at_offset(unsigned offset)
 unsigned contraption_window_offset(const struct CWindowInternal * window)
 {
     unsigned offset =  window - windows;
-    assert(offset < window_count);
+    assert(offset < last_window);
     return offset;
 }
 
 
 struct CWindowInternal * contraption_find_window(int window_id)
 {
-    for (int q = 0; q < window_count; ++q)
+    for (int q = 0; q < last_window; ++q)
     {
         if (windows[q].id == window_id)
         {
@@ -64,12 +74,24 @@ struct CGadget * contraption_load_gadgets(int owning_window, struct CGadget * ne
     return first_gadget;
 }
 
+int contraption_find_free_window()
+{
+    for (int q = 0; q < MAX_WINDOWS; ++q)
+    {
+        if (windows[q].id == WINDOW_NONE)
+        {
+            return q;
+        }
+    }
+    return WINDOW_NONE;
+}
+
 int contraption_load_window(const struct CWindow* window, bool show, bool menu, unsigned owning_client)
 {
     int win_ref = -1;
-    if (window_count < MAX_WINDOWS) {
+    int win_cursor = contraption_find_free_window();
+    if (win_cursor != WINDOW_NONE) {
         win_ref = window_id++;
-        int win_cursor = window_count;
 
         struct CWindowInternal * new_window = &windows[win_cursor];
 
@@ -83,7 +105,7 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu, 
 
         if (new_window->properties.gadgets != NULL)
         {
-            window_count++;
+            last_window++;
         }
         else
         {
@@ -100,9 +122,61 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu, 
     return win_ref;
 }
 
+/* Move gadgets up by certain amount.
+ * Use to rearrange gadget arena after window was closed or its gadgets were deleted.
+ */
+void contraption_move_gadgets(struct CGadgetInternal * first_gadget, unsigned move_by)
+{
+    unsigned gadget_pos = first_gadget - gadgets;
+    for (int q = gadget_pos; q < gadget_count; ++q)
+    {
+        printf("Moving gadget %d to position %d\n", q, q - move_by);
+        gadgets[q - move_by] = gadgets[q];
+    }
+
+    gadget_count -= move_by;
+}
+
 void contraption_free_window(struct CWindowInternal * window)
 {
+    printf("Attempt to close window\n");
+    contraption_unstack_window(window->id);
 
+    struct CGadgetInternal * last_window_gadget = ((struct CGadgetInternal *) window->properties.gadgets) + window->properties.gadget_count;
+    printf("Last gadget ID = %d\nTotal gadget count = %d\n", last_window_gadget - gadgets, gadget_count);
+    contraption_move_gadgets(last_window_gadget, window->properties.gadget_count);
+
+    for (int q = 0; q < last_window; ++q)
+    {
+        struct CWindowInternal * win = &windows[q];
+        if (win == window || win->id == WINDOW_NONE)
+        {
+            // Skip this window
+            continue;
+        }
+
+        if (((struct CGadgetInternal *) win->properties.gadgets) >= last_window_gadget)
+        {
+            win->properties.gadgets = (struct CGadget *) (((struct CGadgetInternal *) win->properties.gadgets) - window->properties.gadget_count);
+        }
+    }
+
+    window->id = WINDOW_NONE;
+    window->properties.gadget_count = 0;
+    window->properties.gadgets = NULL;
+
+    contraption_render();
+}
+
+void contraption_hide_menu()
+{
+    assert(display.menu_opener_window != NULL);
+    assert(display.menu_opener_gadget != NULL);
+    contraption_unstack_window(display.popup_window->id);
+    gadget_handle_event(display.menu_opener_window, display.menu_opener_gadget, EVENT_MENU_CLOSED);
+    display.menu_opener_window = NULL;
+    display.menu_opener_gadget = NULL;
+    display.popup_window = NULL;
 }
 
 void contraption_stack_window(unsigned win_id)
@@ -139,11 +213,11 @@ void contraption_unstack_window(unsigned win_id)
     int current_position = -1;
 
     assert(win_offs >= 0);
-    assert(win_offs < window_count);
+    assert(win_offs < last_window);
 
     struct CExtent window_extents = contraption_window_extents(window);
 
-    for (int q = 0; q < window_count; ++q)
+    for (int q = 0; q < last_window; ++q)
     {
         if (window_stack[q] == win_offs)
         {
@@ -183,9 +257,9 @@ void internal_raise_window(const struct CWindowInternal * win)
     }
 
     assert(win_offs >= 0);
-    assert(win_offs < window_count);
+    assert(win_offs < last_window);
 
-    for (int q = 0; q < window_count; ++q)
+    for (int q = 0; q < last_window; ++q)
     {
         if (window_stack[q] == win_offs)
         {

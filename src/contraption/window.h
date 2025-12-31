@@ -2,6 +2,7 @@
 
 #include "contraption.h"
 
+void contraption_window_init();
 int contraption_load_window(const struct CWindow* window, bool show, bool menu, unsigned owning_client);
 void contraption_stack_window(unsigned win_id);
 void contraption_stack_menu(unsigned menu_id, struct CWindowInternal * window, struct CGadgetInternal * gadget);
@@ -22,3 +23,5 @@ struct CWindowInternal * contraption_window_at_offset(unsigned int offset);
 void internal_raise_window(const struct CWindowInternal * win);
 
 struct CWindowInternal * contraption_active_window();
+
+void contraption_hide_menu();
