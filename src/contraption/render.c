@@ -59,6 +59,21 @@ void contraption_render_background(const struct CExtent * extents, const struct 
 void contraption_render_text(const struct CExtent * extents, const char * text, uint32_t flags, uint32_t rgb_color, uint8_t margin_horiz, uint8_t margin_vert)
 {
     unsigned top = extents->top, left = extents->left;
+    unsigned font = FONT_NORMAL;
+    if (flags & TEXT_BOLD)
+    {
+        font |= FONT_BOLD;
+    }
+    if (flags & TEXT_ITALIC)
+    {
+        font |= FONT_ITALIC;
+    }
+    if (flags & TEXT_MONO)
+    {
+        font |= FONT_MONO;
+    }
+    rpc_call(&fbdev, set_font, font);
+
     FBTextMetrics metrics;
     rpc_call(&fbdev, text_measure, text, &metrics);
 
@@ -86,6 +101,7 @@ void contraption_render_text(const struct CExtent * extents, const char * text, 
     {
         top = extents->bottom - metrics.y_maximum - margin_vert;
     }
+
     rpc_call(&fbdev, text, text, left, top, rgb_color);
 }
 

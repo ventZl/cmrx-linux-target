@@ -86,7 +86,8 @@ enum CGadgetTextFlags {
     TEXT_ALIGN_MIDDLE = 16,
     TEXT_ALIGN_BOTTOM = 32,
     TEXT_BOLD = 64,
-    TEXT_ITALIC = 128
+    TEXT_ITALIC = 128,
+    TEXT_MONO = 256
 };
 
 struct CGadget {
