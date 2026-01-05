@@ -12,13 +12,22 @@ add_compile_definitions(-DCMRX_VERBOSE_API_NAMES=1)
 set(CMRX_ARCH linux)
 set(CMRX_HAL posix)
 
+include(CTest)
+
+# Interface libraries so we can keep them empty
+add_library(test_platform INTERFACE)
+add_library(test_platform_main INTERFACE)
+
 include(CMRX)
 
 add_subdirectory(cmrx)
 add_subdirectory(src/init)
 add_subdirectory(src/fbdev)
 add_subdirectory(src/contraption)
+add_subdirectory(src/term)
+add_subdirectory(src/util)
+add_subdirectory(src/icons)
 
 add_firmware(cmrx-on-linux src/main.c)
 target_link_libraries(cmrx-on-linux cmrx)
-target_add_applications(cmrx-on-linux init fbdev contraption)
+target_add_applications(cmrx-on-linux init fbdev contraption term icons)
