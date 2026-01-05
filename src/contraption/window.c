@@ -2,6 +2,7 @@
 #include "render.h"
 #include "server.h"
 #include "gadget.h"
+#include "client.h"
 #include <cmrx/ipc/notify.h>
 #include <assert.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ struct CWindowInternal * contraption_find_window(int window_id)
     return NULL;
 }
 
-struct CGadget * contraption_load_gadgets(int owning_window, struct CGadget * new_gadgets, unsigned count)
+static struct CGadget * contraption_load_gadgets(int owning_window, const struct CGadget * new_gadgets, unsigned count)
 {
     if (count > MAX_GADGETS - gadget_count)
     {
@@ -130,20 +131,47 @@ void contraption_move_gadgets(struct CGadgetInternal * first_gadget, unsigned mo
     unsigned gadget_pos = first_gadget - gadgets;
     for (int q = gadget_pos; q < gadget_count; ++q)
     {
-        printf("Moving gadget %d to position %d\n", q, q - move_by);
         gadgets[q - move_by] = gadgets[q];
     }
 
     gadget_count -= move_by;
 }
 
+bool contraption_window_reload(struct CWindowInternal * window, const struct CGadget* gadgets, unsigned gadget_count)
+{
+    //    contraption_unstack_window(window->id);
+
+    struct CGadgetInternal * last_window_gadget = ((struct CGadgetInternal *) window->properties.gadgets) + window->properties.gadget_count;
+    contraption_move_gadgets(last_window_gadget, window->properties.gadget_count);
+
+    for (int q = 0; q < last_window; ++q)
+    {
+        struct CWindowInternal * win = &windows[q];
+        if (win == window || win->id == WINDOW_NONE)
+        {
+            // Skip this window
+            continue;
+        }
+
+        if (((struct CGadgetInternal *) win->properties.gadgets) >= last_window_gadget)
+        {
+            win->properties.gadgets = (struct CGadget *) (((struct CGadgetInternal *) win->properties.gadgets) - window->properties.gadget_count);
+        }
+    }
+    window->properties.gadgets = contraption_load_gadgets(window->id, gadgets, gadget_count);
+    window->properties.gadget_count = gadget_count;
+
+    struct CExtent win_extent = contraption_window_extents(window);
+    contraption_render_damage(&win_extent);
+
+    return true;
+}
+
 void contraption_free_window(struct CWindowInternal * window)
 {
-    printf("Attempt to close window\n");
     contraption_unstack_window(window->id);
 
     struct CGadgetInternal * last_window_gadget = ((struct CGadgetInternal *) window->properties.gadgets) + window->properties.gadget_count;
-    printf("Last gadget ID = %d\nTotal gadget count = %d\n", last_window_gadget - gadgets, gadget_count);
     contraption_move_gadgets(last_window_gadget, window->properties.gadget_count);
 
     for (int q = 0; q < last_window; ++q)
@@ -161,11 +189,10 @@ void contraption_free_window(struct CWindowInternal * window)
         }
     }
 
+    contraption_send_event(window->owner_thread, EVENT_WINDOW_CLOSED, window->id);
     window->id = WINDOW_NONE;
     window->properties.gadget_count = 0;
     window->properties.gadgets = NULL;
-
-    contraption_render();
 }
 
 void contraption_hide_menu()
@@ -236,6 +263,10 @@ void contraption_unstack_window(unsigned win_id)
         window_stack[q] = window_stack[q + 1];
     }
 
+    if (current_position == 0)
+    {
+        contraption_swap_menu(contraption_active_window()->menu_window_id);
+    }
     window_stack_count--;
     contraption_render_damage(&window_extents);
 }
@@ -279,10 +310,12 @@ void internal_raise_window(const struct CWindowInternal * win)
     }
 
     window_stack[0] = win_offs;
-    //    display.render = true;
+    struct CExtent win_extents = contraption_window_extents(win);
+    contraption_render_damage(&win_extents);
+
 }
 
-void contraption_move_window(struct CWindowInternal * window, unsigned col, unsigned row)
+void contraption_window_move(struct CWindowInternal * window, unsigned col, unsigned row)
 {
     if (window == NULL)
     {
@@ -293,7 +326,7 @@ void contraption_move_window(struct CWindowInternal * window, unsigned col, unsi
     window->properties.left = col;
 }
 
-void contraption_resize_window(struct CWindowInternal * window, unsigned width, unsigned height)
+void contraption_window_resize(struct CWindowInternal * window, unsigned width, unsigned height)
 {
     if (window == NULL)
     {

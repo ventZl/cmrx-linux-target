@@ -7,9 +7,11 @@ int contraption_load_window(const struct CWindow* window, bool show, bool menu, 
 void contraption_stack_window(unsigned win_id);
 void contraption_stack_menu(unsigned menu_id, struct CWindowInternal * window, struct CGadgetInternal * gadget);
 void contraption_unstack_window(unsigned win_id);
-void contraption_move_window(struct CWindowInternal * window, unsigned col, unsigned row);
-void contraption_resize_window(struct CWindowInternal * window, unsigned width, unsigned height);
+void contraption_window_move(struct CWindowInternal * window, unsigned col, unsigned row);
+void contraption_window_resize(struct CWindowInternal * window, unsigned width, unsigned height);
 void contraption_free_window(struct CWindowInternal * window);
+bool contraption_window_reload(struct CWindowInternal * window, const struct CGadget* gadgets, unsigned gadget_count);
+
 struct CWindowInternal * contraption_find_window(int window_id);
 
 /* Get count of visible windows

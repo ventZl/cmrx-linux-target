@@ -88,7 +88,8 @@ void enter_leave_menuitem(struct CWindowInternal * window, struct CGadgetInterna
         {
             gadget->properties.state &= ~GADGET_STATE_HOVERED;
         }
-        contraption_render_window(window);
+        struct CExtent extents = contraption_window_extents(window);
+        contraption_render_damage(&extents);
     }
 }
 

@@ -4,6 +4,7 @@
 #include "gadgets/button.h"
 #include "gadgets/menuitem.h"
 #include "gadgets/panel.h"
+#include "gadgets/pixmap.h"
 
 #include <stddef.h>
 
@@ -27,8 +28,8 @@ static const struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
     [GADGET_TEXT] = {
         render_text,
         NULL,
-        NULL,
-        NULL,
+        text_down_button,
+        text_up_button,
         NULL,
         NULL,
     },
@@ -42,6 +43,14 @@ static const struct GadgetType gadget_types[GADGET_KNOWN_TYPES] = {
     },
     [GADGET_PANEL] = {
         render_panel,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+    },
+    [GADGET_PIXMAP] = {
+        render_pixmap,
         NULL,
         NULL,
         NULL,

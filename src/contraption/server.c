@@ -1,11 +1,13 @@
 #include <cmrx/application.h>
 #include "../fbdev/fbdev.h"
 #include "../fbdev/pointer.h"
+#include "../fbdev/keyboard.h"
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <cmrx/ipc/notify.h>
 #include <cmrx/ipc/thread.h>
+
 
 #include "contraption.h"
 #include "server.h"
@@ -14,17 +16,33 @@
 #include "resources.h"
 #include "window.h"
 #include "client.h"
+#include "pixmap.h"
 
 #include "api_priv.h"
 
 #include <assert.h>
 
-struct CExtent contraption_window_extents(struct CWindowInternal * window)
+struct CExtent contraption_window_extents(const struct CWindowInternal* window)
 {
-    struct CExtent rv = { .top = window->properties.top, .left = window->properties.left, .right = window->properties.top + window->properties.height, .bottom = window->properties.top + window->properties.height };
+    struct CExtent rv = { .top = window->properties.top, .left = window->properties.left, .right = window->properties.left + window->properties.width, .bottom = window->properties.top + window->properties.height };
+    assert(rv.top <= rv.bottom);
+    assert(rv.left <= rv.right);
     return rv;
 }
 
+struct CExtent contraption_union_extents(const struct CExtent * one, const struct CExtent * two)
+{
+    struct CExtent rv = {
+        .top = one->top < two->top ? one->top : two->top,
+        .left = one->left < two->left ? one->left : two->left,
+        .right = one->right > two->right ? one->right : two->right,
+        .bottom = one->bottom > two->bottom ? one->bottom : two->bottom
+    };
+    assert(rv.top <= rv.bottom);
+    assert(rv.left <= rv.right);
+    return rv;
+
+}
 
 void validate_coordinate(long col, long row)
 {
@@ -53,7 +71,6 @@ void contraption_swap_menu(int new_menu_id)
         contraption_stack_window(new_menu_id);
     }
     display.menu_window_id = new_menu_id;
-    display.render = true;
 }
 
 bool contraption_cursor_inside_window(const struct CWindowInternal * window, int col, int row)
@@ -75,7 +92,7 @@ void contraption_process_pointer()
         struct CExtent extents;
         contraption_calc_extent(display.cursor_window, display.cursor_gadget, &extents);
 
-        struct CPosition rel_pos = { pos.col - extents.left, pos.row - extents.top };
+        struct CPosition rel_pos = { .left = pos.col - extents.left, .top = pos.row - extents.top };
 
         gadget_handle_pointer(display.cursor_window, display.cursor_gadget, &rel_pos, &delta);
         return;
@@ -100,7 +117,7 @@ void contraption_process_pointer()
                     struct CExtent extents;
                     contraption_calc_extent(window, &gadgets[q], &extents);
 
-                    struct CPosition rel_pos = { pos.col - extents.left, pos.row - extents.top };
+                    struct CPosition rel_pos = { .left = pos.col - extents.left, .top = pos.row - extents.top };
 
                     if (pos.col >= extents.left && pos.col <= extents.right && pos.row >= extents.top && pos.row <= extents.bottom)
                     {
@@ -167,6 +184,18 @@ void contraption_process_button()
     }
 }
 
+void contraption_process_keypress()
+{
+    char key;
+    rpc_call(&keyboard, keypress, &key);
+
+    struct CWindowInternal * active_window = contraption_active_window();
+
+    if (active_window != NULL) {
+        contraption_send_event(active_window->owner_thread, EVENT_KEY_PRESSED, key);
+    }
+}
+
 /* Generate gray gradient of dimension [1 x steps]
  */
 void generate_gradient_gray(int steps, uint32_t start_shade, uint32_t end_shade, uint32_t * gradient)
@@ -187,49 +216,17 @@ int contraption_main(void * data)
     (void) data;
 
     for (int q = 0; q < BACKGROUND_SIZE * BACKGROUND_SIZE; ++q) {
-        background_pixmap[q] = 0x4168A9FF;
+        desktop_pixmap[q] = 0x4168A9FF;
         window_pixmap[q] = (q % 64) < 32 ? 0xEAEAEAFF : 0xF0F0F0FF;
     }
 
-    struct CGadget desktop_gadgets[] = {
-        {
-            .type = GADGET_PANEL,
-            .top = 0,
-            .left = 0,
-            .width = 1280,
-            .height = 20,
-        }
-    };
-
-    struct CWindow desktop_window = {
-        .top = 0,
-        .left = 0,
-        .width = 1280,
-        .height = 800,
-        .gadgets = desktop_gadgets,
-        .gadget_count = 1,
-        .background = BACKGROUND_DESKTOP,
-        .flags = WINDOW_FLAG_BELOW_ALL
-    };
-
     contraption_init_client();
     contraption_window_init();
-    contraption_open_connection(&display, &desktop_window);
-    contraption_open_window(&display, &desktop_window);
+    contraption_pixmap_init();
+    contraption_resources_init();
 
     generate_gradient_gray(TITLE_HEIGHT - 1, 0xCE, 0xA8, title_pixmap);
     generate_gradient_gray(BUTTON_HEIGHT - 1, 0xDE, 0x98, button_pixmap);
-/*
-    int steps = TITLE_HEIGHT - 1;
-    int start = 0xCE;
-    int stop = 0xA8;
-    int step = (stop - start) / steps;
-
-    for (int q = 0; q < steps; ++q)
-    {
-        int color = start + step * q;
-        title_pixmap[q] = (color << 24) | (color << 16) | (color << 8) | 0xFF;
-    }*/
 
     title_pixmap[0] = 0xE3E3E3FF;
     title_pixmap[TITLE_HEIGHT - 1] = 0x515151FF;
@@ -250,6 +247,11 @@ int contraption_main(void * data)
             contraption_process_button();
             display.button = false;
         }
+        if (display.keypress)
+        {
+            contraption_process_keypress();
+            display.keypress = false;
+        }
         if (display.render)
         {
             contraption_render();
@@ -259,6 +261,9 @@ int contraption_main(void * data)
 
 }
 
+extern int dock_main(void *);
+
 OS_APPLICATION_MMIO_RANGE(contraption, 0, 0);
 OS_APPLICATION(contraption);
 OS_THREAD_CREATE(contraption, contraption_main, NULL, 16);
+OS_THREAD_CREATE(contraption, dock_main, NULL, 64);

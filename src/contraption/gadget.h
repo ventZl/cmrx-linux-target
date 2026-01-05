@@ -2,11 +2,6 @@
 
 #include <contraption.h>
 
-enum GadgetEvent {
-    EVENT_NONE = 0,
-    EVENT_MENU_CLOSED
-};
-
 typedef void (*GadgetRenderCb_t)(const struct CWindowInternal * window, const struct CGadgetInternal * gadget);
 typedef void (*GadgetPointerCb_t)(struct CWindowInternal * window, struct CGadgetInternal * gadget, struct CPosition * rel_pos, struct CPosition * delta);
 typedef void (*GadgetButtonCb_t)(struct CWindowInternal * window, struct CGadgetInternal * gadget, uint32_t buttons);

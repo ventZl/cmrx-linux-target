@@ -72,6 +72,20 @@ void contraption_render_text(const struct CExtent * extents, const char * text, 
     {
         font |= FONT_MONO;
     }
+    if (flags & TEXT_SIZE_32)
+    {
+        font |= FONT_SIZE_32;
+    }
+
+    if (flags & TEXT_SIZE_48)
+    {
+        font |= FONT_SIZE_48;
+    }
+
+    if (flags & TEXT_SIZE_64)
+    {
+        font |= FONT_SIZE_64;
+    }
     rpc_call(&fbdev, set_font, font);
 
     FBTextMetrics metrics;
@@ -110,12 +124,14 @@ void contraption_render_window(struct CWindowInternal * window)
     struct FBRectangle dest = { window->properties.left, window->properties.top, window->properties.width, window->properties.height };
 
     struct FBRectangle * rect = &window_background;
+    struct FBRectangle one_by_one = { 0, 0, 1, 1 };
+    uint32_t byte = 0x123456;
     uint32_t * text = window_pixmap;
 
     switch (window->properties.background) {
         case BACKGROUND_DESKTOP:
-            rect = &background;
-            text = background_pixmap;
+            rect = &desktop_tile;
+            text = desktop_pixmap;
             break;
 
         case BACKGROUND_WHITE:
@@ -128,8 +144,20 @@ void contraption_render_window(struct CWindowInternal * window)
             text = black_pixmap;
             break;
 
-        default:
+        case BACKGROUND_DOCK:
+            rect = &one_by_one;
+            byte = 0x8b99beff;
+            text = &byte;
+            break;
+
+        case BACKGROUND_WINDOW:
             // Do nothing
+            break;
+
+        default:
+            rect = &one_by_one;
+            byte = window->properties.background;
+            text = &byte;
     }
     rpc_call(&fbdev, blit, &dest, rect, text);
 
@@ -242,7 +270,7 @@ int contraption_subtract_rect(const struct FBRectangle * minuend, const struct F
     return idx;
 }
 
-void contraption_render_culled(struct FBRectangle * area_to_render, unsigned level)
+void contraption_render_culled(const struct FBRectangle * area_to_render, unsigned level)
 {
     int subcount;
     do {
