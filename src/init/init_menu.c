@@ -2,32 +2,8 @@
 #include "events.h"
 
 struct CGadget init_menu_items[] = {
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 0,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "About Init",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_INIT_ABOUT,
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 19,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "Preferences...",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_INIT_PREFERENCES
-    },
+    GADGET_MENUWINDOW_ITEM(0, 90, "About Init", EVENT_INIT_ABOUT, GADGET_MENU_ITEM_ENABLED),
+    GADGET_MENUWINDOW_ITEM(1, 90, "Preferences...", EVENT_INIT_ABOUT, GADGET_MENU_ITEM_ENABLED),
 };
 
 struct CWindow init_menu = {
@@ -36,112 +12,32 @@ struct CWindow init_menu = {
     .width = 90,
     .height = 40,
     .gadgets = init_menu_items,
-    .gadget_count = 2,
+    .gadget_count = GADGET_COUNT(init_menu_items),
     .background = BACKGROUND_WHITE
 };
 
 
 struct CGadget file_menu_items[] = {
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 0,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "New",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_FILE_NEW
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 19,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "Open...",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_FILE_OPEN
-
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 39,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "Save",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = 0,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_FILE_SAVE
-
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 59,
-        .left = 0,
-        .width = 90,
-        .height = 20,
-        .text = "Quit",
-        .text_flags = TEXT_ALIGN_LEFT | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .text_margin_horiz = 5,
-        .sub_menu_id = WINDOW_NONE,
-        .event_id = EVENT_FILE_QUIT
-
-    },
+    GADGET_MENUWINDOW_ITEM(0, 90, "New", EVENT_FILE_NEW, GADGET_MENU_ITEM_ENABLED),
+    GADGET_MENUWINDOW_ITEM(1, 90, "Open...", EVENT_FILE_OPEN, GADGET_MENU_ITEM_ENABLED),
+    GADGET_MENUWINDOW_ITEM(2, 90, "Save", EVENT_FILE_SAVE, GADGET_MENU_ITEM_DISABLED),
+    GADGET_MENUWINDOW_ITEM(3, 90, "Quit", EVENT_FILE_QUIT, GADGET_MENU_ITEM_ENABLED),
 };
 
 struct CWindow file_menu = {
     .top = 20,
-    .left = 0,
+    .left = 60,
     .width = 90,
     .height = 80,
     .gadgets = file_menu_items,
-    .gadget_count = 4,
+    .gadget_count = GADGET_COUNT(file_menu_items),
     .background = BACKGROUND_WHITE
 };
 
 struct CGadget about_menu_items[] = {
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 0,
-        .left = 0,
-        .width = 40,
-        .height = 20,
-        .text = "Init",
-        .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE | TEXT_BOLD,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .sub_menu_id = WINDOW_NONE,
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 0,
-        .left = 39,
-        .width = 40,
-        .height = 20,
-        .text = "File",
-        .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
-        .flags = GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE,
-        .sub_menu_id = WINDOW_NONE,
-    },
-    {
-        .type = GADGET_MENU_ITEM,
-        .top = 0,
-        .left = 79,
-        .width = 40,
-        .height = 20,
-        .text = "Help",
-        .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
-        .flags = 0 //GADGET_FLAG_ENABLED | GADGET_FLAG_ACTIVABLE
-    },
+    GADGET_MENUBAR_ITEM_BOLD(0, 60, "Manager", EVENT_NONE, GADGET_MENU_ITEM_ENABLED),
+    GADGET_MENUBAR_ITEM(60, 40, "File", EVENT_NONE, GADGET_MENU_ITEM_ENABLED),
+    GADGET_MENUBAR_ITEM(110, 40, "Help", EVENT_NONE, GADGET_MENU_ITEM_DISABLED),
 };
 
 struct CWindow init_app_menu = {
@@ -150,6 +46,6 @@ struct CWindow init_app_menu = {
     .width = 1280,
     .height = 20,
     .gadgets = about_menu_items,
-    .gadget_count = 3
+    .gadget_count = GADGET_COUNT(about_menu_items)
 };
 

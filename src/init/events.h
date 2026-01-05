@@ -9,6 +9,9 @@ enum InitEvents {
     EVENT_FILE_SAVE,
     EVENT_FILE_QUIT,
 
+    EVENT_RUN_TERMINAL,
+    EVENT_RUN_PRESENTATION,
+
     EVENT_BUTTON_OK
 };
 

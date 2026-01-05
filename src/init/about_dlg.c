@@ -11,7 +11,7 @@
 struct CGadget about_gadgets[] = {
     {
         .type = GADGET_BUTTON,
-        .top = 140,
+        .top = 140 + 150,
         .left = 330/2 - 40,
         .width = 80,
         .height = 30,
@@ -21,6 +21,16 @@ struct CGadget about_gadgets[] = {
         .text_flags = TEXT_ALIGN_CENTER | TEXT_ALIGN_MIDDLE,
         .event_id = EVENT_BUTTON_OK
 
+    },
+    {
+        .type = GADGET_PIXMAP,
+        .top = 35,
+        .left = 330/2 - 100,
+        .width = 200,
+        .height = 116,
+        .flags = GADGET_FLAG_ENABLED,
+        .state = 0,
+        .pixmap_id = PIXMAP_NONE,
     },
     {
         .type = GADGET_TITLE_BAR,
@@ -33,7 +43,7 @@ struct CGadget about_gadgets[] = {
     },
     {
         .type = GADGET_TEXT,
-        .top = 35,
+        .top = 35 + 150,
         .left = 10,
         .width = 310,
         .height = 22,
@@ -46,7 +56,7 @@ struct CGadget about_gadgets[] = {
 
     {
         .type = GADGET_TEXT,
-        .top = 57,
+        .top = 57 + 150,
         .left = 0,
         .width = 165,
         .height = 22,
@@ -59,7 +69,7 @@ struct CGadget about_gadgets[] = {
     },
     {
         .type = GADGET_TEXT,
-        .top = 57,
+        .top = 57 + 150,
         .left = 165,
         .width = 165,
         .height = 22,
@@ -73,7 +83,7 @@ struct CGadget about_gadgets[] = {
 
     {
         .type = GADGET_TEXT,
-        .top = 79,
+        .top = 79 + 150,
         .left = 0,
         .width = 165,
         .height = 22,
@@ -86,7 +96,7 @@ struct CGadget about_gadgets[] = {
     },
     {
         .type = GADGET_TEXT,
-        .top = 79,
+        .top = 79 + 150,
         .left = 165,
         .width = 165,
         .height = 22,
@@ -100,7 +110,7 @@ struct CGadget about_gadgets[] = {
 
     {
         .type = GADGET_TEXT,
-        .top = 101,
+        .top = 101 + 150,
         .left = 0,
         .width = 165,
         .height = 22,
@@ -113,7 +123,7 @@ struct CGadget about_gadgets[] = {
     },
     {
         .type = GADGET_TEXT,
-        .top = 101,
+        .top = 101 + 150,
         .left = 165,
         .width = 165,
         .height = 22,
@@ -128,12 +138,12 @@ struct CGadget about_gadgets[] = {
 
 struct CWindow about_win = {
     .width = 330,
-    .height = 190,
+    .height = 190 + 150,
     .top = 90,
     .left = 1280 / 2 - (330 / 2) ,
     .title = "About CMRX",
     .gadgets = about_gadgets,
     .gadget_count = sizeof(about_gadgets)/sizeof(about_gadgets[0]),
     .background = BACKGROUND_WINDOW,
-    .flags = WINDOW_FLAG_BORDER
+    .flags = WINDOW_FLAG_BORDER | WINDOW_FLAG_NO_HIDE | WINDOW_FLAG_FIX_SIZE
 };
