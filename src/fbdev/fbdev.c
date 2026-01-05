@@ -1,6 +1,7 @@
 #include "fbdev.h"
 #include "fbdev_impl.h"
 #include "pointer.h"
+#include "keyboard.h"
 
 #include <cmrx/application.h>
 #include <stdio.h>
@@ -12,6 +13,8 @@
 
 #include <SDL3/SDL.h>
 #include <fonts/NotoSans14.h>
+
+
 
 static struct FBDevImpl fbdev_impl = {
     .running = true,
@@ -26,7 +29,10 @@ struct FBDev fbdev = {
     .impl = &fbdev_impl,
     .do_cull = false,
     .cull_area = { .col = 0, .row = 0, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT },
-    .current_font = &noto_sans_14
+    .current_font = &noto_sans_14,
+    .scale = 1.,
+    .win_pad_left = 0,
+    .win_pad_top = 0
 };
 
 void fbdev_blend(struct FBDev * fb, unsigned col, unsigned row, uint32_t rgba)
@@ -82,7 +88,16 @@ SDL_AppResult SDL_AppEvent(struct FBDev * device, SDL_Event *event)
         case SDL_EVENT_MOUSE_MOTION:
             pointer.pos.col = event->motion.x;
             pointer.pos.row = event->motion.y;
-            generate_interrupt(15);
+            if (device->scale != 1. || device->win_pad_left != 0 || device->win_pad_top != 0)
+            {
+                pointer.pos.col = (pointer.pos.col - device->win_pad_left) / device->scale;
+                pointer.pos.row = (pointer.pos.row - device->win_pad_top) / device->scale;
+            }
+            if (pointer.pos.col < WINDOW_WIDTH && pointer.pos.row < WINDOW_HEIGHT)
+            {
+                // Generate interrupt only if cursor is within visible area
+                generate_interrupt(15);
+            }
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -93,6 +108,49 @@ SDL_AppResult SDL_AppEvent(struct FBDev * device, SDL_Event *event)
         case SDL_EVENT_MOUSE_BUTTON_UP:
             pointer.buttons_released |= 1 << event->button.button;
             generate_interrupt(15);
+            break;
+
+        case SDL_EVENT_KEY_DOWN:
+            switch (event->key.scancode) {
+//                case SDL_SCANCODE_TAB:
+                case SDL_SCANCODE_CAPSLOCK:
+                case SDL_SCANCODE_LSHIFT:
+                case SDL_SCANCODE_RSHIFT:
+                case SDL_SCANCODE_LALT:
+                case SDL_SCANCODE_RALT:
+                case SDL_SCANCODE_LCTRL:
+                case SDL_SCANCODE_RCTRL:
+//                case SDL_SCANCODE_ESCAPE:
+                    break;
+
+                default:
+                    keyboard.key = SDL_GetKeyFromScancode(event->key.scancode, event->key.mod, false);
+                    generate_interrupt(14);
+            }
+
+            break;
+
+        case SDL_EVENT_WINDOW_RESIZED:
+            printf("New window size is %dx%d\n", event->window.data1, event->window.data2);
+            double new_width = event->window.data1;
+            double new_height = event->window.data2;
+            double new_aspect = new_width / new_height;
+            static const double default_aspect = (double) WINDOW_WIDTH / (double) WINDOW_HEIGHT;
+
+            if (new_aspect < default_aspect)
+            {
+                // 16:10, 16:11, ....
+                device->scale = (double) new_width / (double) WINDOW_WIDTH;
+                device->win_pad_top = (new_height - (new_width / default_aspect)) / 2.;
+                device->win_pad_left = 0;
+            }
+            else
+            {
+                device->scale = (double) new_height / (double) WINDOW_HEIGHT;
+                device->win_pad_left = (new_width - (new_height * default_aspect )) / 2.;
+                device->win_pad_top = 0;
+            }
+            printf("Scale = %f\nPadding left = %d\nPadding top = %d\n", device->scale, device->win_pad_left, device->win_pad_top);
             break;
 
         default:

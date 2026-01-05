@@ -38,7 +38,11 @@ enum FBFont {
     FONT_NORMAL = 0,
     FONT_BOLD = 1 << 0,
     FONT_ITALIC = 1 << 1,
-    FONT_MONO = 1 << 2
+    FONT_MONO = 1 << 2,
+    FONT_SIZE_14 = 0,
+    FONT_SIZE_32 = 1 << 3,
+    FONT_SIZE_48 = 1 << 4,
+    FONT_SIZE_64 = 1 << 5
 };
 
 struct FBDevVTable {
@@ -62,6 +66,8 @@ struct FBDev {
     bool do_cull;
     struct FBRectangle cull_area;
     const struct text_font_t * current_font;
+    double scale;
+    unsigned win_pad_left, win_pad_top;
 };
 
 extern struct FBDev fbdev;

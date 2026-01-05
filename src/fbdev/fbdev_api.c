@@ -13,6 +13,11 @@
 #include <fonts/HackNerdMono14b.h>
 #include <fonts/HackNerdMono14bi.h>
 #include <fonts/HackNerdMono14i.h>
+#include <fonts/HackNerdMono32b.h>
+#include <fonts/HackNerdMono64b.h>
+#include <fonts/Roboto32.h>
+#include <fonts/Roboto48b.h>
+#include <fonts/RobotoBlack64b.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -66,7 +71,11 @@ static void fbdev_blit(INSTANCE(this), const struct FBRectangle * destination, c
             assert(col < WINDOW_WIDTH && row < WINDOW_HEIGHT);
             if (col < WINDOW_WIDTH && row < WINDOW_HEIGHT)
             {
-                fb[(row + destination->row) * WINDOW_WIDTH + (col + destination->col)] = buffer[(row % texture->height) * texture->width + (col % texture->width)];
+                uint32_t pixel = buffer[(row % texture->height) * texture->width + (col % texture->width)];
+                if (pixel && 0xFF != 0)
+                {
+                    fb[(row + destination->row) * WINDOW_WIDTH + (col + destination->col)] = pixel;
+                }
             }
         }
     }
@@ -210,7 +219,12 @@ FontEntry fonts[] = {
     { FONT_MONO, &hack_nerd_14 },
     { FONT_MONO | FONT_BOLD, &hack_nerd_14_b },
     { FONT_MONO | FONT_ITALIC, &hack_nerd_14_i },
-    { FONT_MONO | FONT_BOLD | FONT_ITALIC, &hack_nerd_14_bi }
+    { FONT_MONO | FONT_BOLD | FONT_ITALIC, &hack_nerd_14_bi },
+    { FONT_MONO | FONT_BOLD | FONT_SIZE_32, &hack_nerd_32_b },
+    { FONT_MONO | FONT_BOLD | FONT_SIZE_64, &hack_nerd_64_b },
+    { FONT_SIZE_32, &roboto_32 },
+    { FONT_BOLD | FONT_SIZE_64, &roboto_black_64_b },
+    { FONT_BOLD | FONT_SIZE_48, &roboto_48_b },
 };
 
 static const text_font * fbdev_select_font(unsigned font)

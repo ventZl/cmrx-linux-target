@@ -6,7 +6,7 @@
 
 // SDL window dimensions = framebuffer screen dimensions
 #define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 800
+#define WINDOW_HEIGHT 720
 
 struct FBDevImpl {
     bool running;
