@@ -36,7 +36,6 @@ int logo_pixmap_id = PIXMAP_NONE;
 struct Pixmap init_icon;
 
 extern struct Executable term;
-extern struct Executable presentation;
 
 int init_main(void * data)
 {
@@ -112,7 +111,6 @@ int init_main(void * data)
                 break;
 
             case EVENT_RUN_PRESENTATION:
-                rpc_call(&presentation, exec);
                 break;
 
             case EVENT_BUTTON_OK:
