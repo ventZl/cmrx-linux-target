@@ -16,6 +16,7 @@
 #include <fonts/HackNerdMono32b.h>
 #include <fonts/HackNerdMono64b.h>
 #include <fonts/Roboto32.h>
+#include <fonts/Roboto32b.h>
 #include <fonts/Roboto48b.h>
 #include <fonts/RobotoBlack64b.h>
 
@@ -223,6 +224,7 @@ FontEntry fonts[] = {
     { FONT_MONO | FONT_BOLD | FONT_SIZE_32, &hack_nerd_32_b },
     { FONT_MONO | FONT_BOLD | FONT_SIZE_64, &hack_nerd_64_b },
     { FONT_SIZE_32, &roboto_32 },
+    { FONT_SIZE_32 | FONT_BOLD, &roboto_32_b },
     { FONT_BOLD | FONT_SIZE_64, &roboto_black_64_b },
     { FONT_BOLD | FONT_SIZE_48, &roboto_48_b },
 };

@@ -15,6 +15,7 @@ add_application(fbdev
     fonts/HackNerdMono32b.c
     fonts/HackNerdMono64b.c
     fonts/Roboto32.c
+    fonts/Roboto32b.c
     fonts/Roboto48b.c
     fonts/RobotoBlack64b.c
     pointer.c
