@@ -112,7 +112,6 @@ int init_main(void * data)
                 break;
 
             case EVENT_RUN_PRESENTATION:
-                rpc_call(&presentation, exec);
                 break;
 
             case EVENT_BUTTON_OK:
